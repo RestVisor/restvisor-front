@@ -1,3 +1,130 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 235 85% 60%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 235 85% 60%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge {
+  @apply px-2 py-1 rounded-full text-xs font-semibold;
+}
+
+.status-badge.available {
+  @apply bg-green-100 text-green-800;
+}
+
+.status-badge.occupied {
+  @apply bg-red-100 text-red-800;
+}
+
+.status-badge.reserved {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.status-badge.preparing {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.status-badge.delivered {
+  @apply bg-purple-100 text-purple-800;
+}
+
+.status-badge.paid {
+  @apply bg-green-100 text-green-800;
+}
+
+.menu-item-card {
+  @apply relative p-4 rounded-xl border transition-all duration-200 hover:border-primary/50 hover:shadow-lg;
+}
+
+.menu-item-card img {
+  @apply rounded-lg object-cover w-full h-32 mb-3;
+}
+
+.menu-item-card .price-tag {
+  @apply absolute top-2 right-2 bg-white/90 px-3 py-1 rounded-full text-sm font-semibold shadow-sm;
+}
+
+.dashboard-card {
+  @apply bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition-shadow duration-200;
+}
+
+.input-field {
+  @apply block w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-gray-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors duration-200;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+}
+
+.btn-primary {
+  @apply bg-primary text-white hover:bg-primary/90 focus-visible:ring-primary;
+}
+
+.btn-secondary {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+}
+
+.btn-destructive {
+  @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+}
+
+.btn-ghost {
+  @apply hover:bg-accent hover:text-accent-foreground;
+}
+
+.btn-link {
+  @apply text-primary underline-offset-4 hover:underline;
+}
+
+.btn-icon {
+  @apply h-10 w-10 rounded-lg flex items-center justify-center;
+}

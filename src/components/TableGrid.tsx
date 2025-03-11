@@ -7,32 +7,29 @@ interface TableGridProps {
 }
 
 export function TableGrid({ tables, onTableSelect }: TableGridProps) {
-  const getTableStatusColor = (status: Table['status']) => {
-    switch (status) {
-      case 'available':
-        return 'bg-green-100 border-green-500 text-green-800';
-      case 'occupied':
-        return 'bg-red-100 border-red-500 text-red-800';
-      case 'reserved':
-        return 'bg-yellow-100 border-yellow-500 text-yellow-800';
-      default:
-        return 'bg-gray-100 border-gray-500 text-gray-800';
-    }
-  };
-
   return (
-    <div className="grid grid-cols-4 gap-4 md:grid-cols-6 lg:grid-cols-8">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
       {tables.map((table) => (
         <button
           key={table.number}
           onClick={() => onTableSelect(table)}
-          className={`p-4 rounded-lg border-2 transition-all hover:scale-105 ${getTableStatusColor(
-            table.status
-          )}`}
+          className="dashboard-card hover-lift group"
         >
-          <div className="text-lg font-bold">Table {table.number}</div>
-          <div className="text-sm">{table.seats} seats</div>
-          <div className="text-xs capitalize mt-1">{table.status}</div>
+          <div className="aspect-square flex flex-col items-center justify-center text-center p-4">
+            <div className={`w-16 h-16 rounded-full mb-3 flex items-center justify-center ${
+              table.status === 'available' ? 'bg-green-100' :
+              table.status === 'occupied' ? 'bg-red-100' :
+              'bg-yellow-100'
+            }`}>
+              <span className="text-2xl font-bold">{table.number}</span>
+            </div>
+            <div className="space-y-1">
+              <p className="font-medium text-gray-900">{table.seats} seats</p>
+              <span className={`status-badge ${table.status}`}>
+                {table.status}
+              </span>
+            </div>
+          </div>
         </button>
       ))}
     </div>

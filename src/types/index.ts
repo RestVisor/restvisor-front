@@ -6,11 +6,15 @@ export interface MenuItem {
   available: boolean;
   image?: string;
   description?: string;
+  stock?: number;
+  estimatedPrepTime?: number; // in minutes
 }
 
 export interface OrderItem extends MenuItem {
   quantity: number;
   notes?: string;
+  startedAt?: Date;
+  completedAt?: Date;
 }
 
 export interface Order {
@@ -21,6 +25,11 @@ export interface Order {
   total: number;
   createdAt: Date;
   updatedAt: Date;
+  waiterName?: string;
+  chefName?: string;
+  estimatedCompletionTime?: Date;
+  actualCompletionTime?: Date;
+  preparationNotes?: string;
 }
 
 export interface Table {
@@ -30,7 +39,7 @@ export interface Table {
   currentOrderId?: string;
 }
 
-export type UserRole = 'admin' | 'supervisor' | 'cashier' | 'waiter';
+export type UserRole = 'admin' | 'waiter' | 'chef';
 
 export interface User {
   id: string;

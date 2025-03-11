@@ -9,39 +9,37 @@ interface MenuGridProps {
 
 export function MenuGrid({ items, onItemSelect }: MenuGridProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {items.map((item) => (
-        <div
-          key={item.id}
-          className={`relative p-3 md:p-4 rounded-lg border transition-all ${
-            item.available
-              ? 'bg-white border-gray-200 hover:border-indigo-500'
-              : 'bg-gray-100 border-gray-300 opacity-60'
-          }`}
-        >
+        <div key={item.id} className="menu-item-card">
           {item.image && (
             <img
               src={item.image}
               alt={item.name}
-              className="w-full h-24 sm:h-32 object-cover rounded-md mb-2 md:mb-3"
+              className="w-full h-40 object-cover rounded-lg mb-3"
             />
           )}
-          <div className="flex justify-between items-start">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-gray-900 truncate">{item.name}</h3>
-              <p className="text-xs md:text-sm text-gray-500 line-clamp-2">{item.description}</p>
+          <span className="price-tag">${item.price.toFixed(2)}</span>
+          <div className="space-y-2">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
+              </div>
             </div>
-            <span className="ml-2 text-base md:text-lg font-semibold text-indigo-600 whitespace-nowrap">
-              ${item.price.toFixed(2)}
-            </span>
+            <div className="flex items-center justify-between">
+              <span className={`status-badge ${item.available ? 'available' : 'occupied'}`}>
+                {item.available ? 'In Stock' : 'Out of Stock'}
+              </span>
+              <button
+                onClick={() => onItemSelect(item)}
+                disabled={!item.available}
+                className="btn btn-icon btn-primary disabled:opacity-50"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => onItemSelect(item)}
-            disabled={!item.available}
-            className="absolute bottom-2 right-2 p-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-transform"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
         </div>
       ))}
     </div>
