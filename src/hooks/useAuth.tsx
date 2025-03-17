@@ -16,16 +16,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string, role: UserRole) => {
     try {
-      // Make a request to localhost:3000/api/login
-      const response = await fetch('http://localhost:3000/api/login', {
+      // Make a request to localhost:3000/api/auth/login
+      const response = await fetch('http://localhost:3000/api/usuarios/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username,
+          email: username,
           password,
-          role,
+          rol: role,
         }),
       });
 
@@ -37,7 +37,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Update auth state with user data from response
       setAuthState({ 
-        user: userData, 
+        user: {
+          id: userData.id || '1',
+          username,
+          role,
+          name: userData.nombre || (role === 'admin' ? 'Admin User' : 'Waiter User'),
+        }, 
         isAuthenticated: true 
       });
       

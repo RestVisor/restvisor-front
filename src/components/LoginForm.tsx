@@ -19,7 +19,8 @@ export function LoginForm() {
     try {
       await login(username, password, role);
       // Login is handled inside the useAuth hook
-    } catch (err) {
+    } catch (error) {
+      console.error('Login error:', error);
       setError('Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
