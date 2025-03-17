@@ -115,3 +115,4 @@ export function Layout({ children }: LayoutProps) {
     </div>
   );
 }
+/* Main content */
