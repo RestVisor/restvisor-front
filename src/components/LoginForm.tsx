@@ -6,7 +6,7 @@ import { User, KeyRound } from 'lucide-react';
 export function LoginForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('waiter');
+  const [role, setRole] = useState<UserRole>('camarero');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
@@ -89,13 +89,13 @@ export function LoginForm() {
                 type="radio"
                 name="role"
                 value="waiter"
-                checked={role === 'waiter'}
+                checked={role === 'camarero'}
                 onChange={(e) => setRole(e.target.value as UserRole)}
                 className="sr-only"
                 disabled={loading}
               />
-              <div className={`w-4 h-4 rounded-full border-2 ${role === 'waiter' ? 'border-primary bg-primary' : 'border-gray-300'}`}>
-                {role === 'waiter' && <div className="w-2 h-2 bg-white rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>}
+              <div className={`w-4 h-4 rounded-full border-2 ${role === 'camarero' ? 'border-primary bg-primary' : 'border-gray-300'}`}>
+                {role === 'camarero' && <div className="w-2 h-2 bg-white rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>}
               </div>
               <span className="text-sm font-medium text-gray-700">Waiter</span>
             </label>
@@ -105,13 +105,13 @@ export function LoginForm() {
                 type="radio"
                 name="role"
                 value="chef"
-                checked={role === 'chef'}
+                checked={role === 'cocinero'}
                 onChange={(e) => setRole(e.target.value as UserRole)}
                 className="sr-only"
                 disabled={loading}
               />
-              <div className={`w-4 h-4 rounded-full border-2 ${role === 'chef' ? 'border-primary bg-primary' : 'border-gray-300'}`}>
-                {role === 'chef' && <div className="w-2 h-2 bg-white rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>}
+              <div className={`w-4 h-4 rounded-full border-2 ${role === 'cocinero' ? 'border-primary bg-primary' : 'border-gray-300'}`}>
+                {role === 'cocinero' && <div className="w-2 h-2 bg-white rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>}
               </div>
               <span className="text-sm font-medium text-gray-700">Chef</span>
             </label>
