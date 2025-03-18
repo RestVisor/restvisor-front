@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { UserRole } from '../types';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
-export function LoginForm() {
-  const [username, setUsername] = useState('');
+export function RegisterForm() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>('waiter');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { login } = useAuth();
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,10 +19,11 @@ export function LoginForm() {
     setLoading(true);
     
     try {
-      await login(username, password, role);
+      await register(name, email, password, role);
+      navigate('/login');
     } catch (error) {
-      console.error('Login error:', error);
-      setError('Login failed. Please check your credentials.');
+      console.error('Registration error:', error);
+      setError('Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -29,7 +32,7 @@ export function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-600 rounded text-sm">
@@ -39,13 +42,25 @@ export function LoginForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+            <label className="block text-sm font-medium mb-1">Full Name</label>
+            <input
+              type="text"
+              required
+              className="w-full p-2 border rounded"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium mb-1">Email</label>
             <input
               type="email"
               required
               className="w-full p-2 border rounded"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
             />
           </div>
@@ -103,17 +118,17 @@ export function LoginForm() {
             className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:opacity-50"
             disabled={loading}
           >
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? 'Creating account...' : 'Create account'}
           </button>
 
           <div className="text-center text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-blue-600 hover:underline">
-              Register here
+            Already have an account?{' '}
+            <Link to="/login" className="text-blue-600 hover:underline">
+              Sign in here
             </Link>
           </div>
         </form>
       </div>
     </div>
   );
-}
+} 

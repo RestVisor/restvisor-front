@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState } from 'react';
-import { User, AuthState, UserRole } from '../types';
+import { AuthState, UserRole } from '../types';
 
 interface AuthContextType extends AuthState {
-  login: (username: string, password: string, role: UserRole) => void;
+  login: (username: string, password: string, role: UserRole) => Promise<boolean>;
+  register: (name: string, email: string, password: string, role: UserRole) => Promise<boolean>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+const API_URL = import.meta.env.VITE_API_URL;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
@@ -16,8 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string, role: UserRole) => {
     try {
-      // Make a request to localhost:3000/api/auth/login
-      const response = await fetch('http://localhost:3000/api/usuarios/login', {
+      const response = await fetch(`${API_URL}/usuarios/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -25,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({
           email: username,
           password,
-          rol: role,
+          role,
         }),
       });
 
@@ -35,13 +36,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const userData = await response.json();
       
-      // Update auth state with user data from response
       setAuthState({ 
         user: {
           id: userData.id || '1',
           username,
           role,
-          name: userData.nombre || (role === 'admin' ? 'Admin User' : 'Waiter User'),
+          name: userData.name || (role === 'admin' ? 'Admin User' : 'Waiter User'),
         }, 
         isAuthenticated: true 
       });
@@ -49,15 +49,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return true;
     } catch (error) {
       console.error('Login error:', error);
-      // If the server is not running, use mock data for development
-      const mockUser: User = {
-        id: '1',
-        username,
-        role,
-        name: role === 'admin' ? 'Admin User' : 'Waiter User',
-      };
-      setAuthState({ user: mockUser, isAuthenticated: true });
+      throw error;
+    }
+  };
+
+  const register = async (name: string, email: string, password: string, role: UserRole) => {
+    try {
+      const response = await fetch(`${API_URL}/usuarios/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Registration failed');
+      }
+
+      await response.json();
       return true;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
     }
   };
 
@@ -66,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ ...authState, login, logout }}>
+    <AuthContext.Provider value={{ ...authState, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
