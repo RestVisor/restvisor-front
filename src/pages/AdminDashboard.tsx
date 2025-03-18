@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Layout } from '../components/Layout';
 import { Table, MenuItem } from '../types';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Save } from 'lucide-react';
 
 export function AdminDashboard() {
   const [tables, setTables] = useState<Table[]>([
@@ -32,6 +32,8 @@ export function AdminDashboard() {
   ]);
 
   const [selectedTab, setSelectedTab] = useState<'tables' | 'menu' | 'orders'>('tables');
+  const [editingTable, setEditingTable] = useState<number | null>(null);
+  const [editingMenuItem, setEditingMenuItem] = useState<string | null>(null);
 
   const handleAddTable = () => {
     const newTableNumber = Math.max(...tables.map(t => t.number)) + 1;
@@ -46,6 +48,15 @@ export function AdminDashboard() {
     setTables(tables.filter(t => t.number !== number));
   };
 
+  const handleEditTable = (number: number) => {
+    setEditingTable(number);
+  };
+
+  const handleSaveTable = (number: number, seats: number, status: string) => {
+    setTables(tables.map(t => t.number === number ? { ...t, seats, status } : t));
+    setEditingTable(null);
+  };
+
   const handleAddMenuItem = () => {
     const newItem: MenuItem = {
       id: crypto.randomUUID(),
@@ -53,6 +64,7 @@ export function AdminDashboard() {
       price: 0,
       category: 'main',
       available: true,
+      description: '',
       stock: 0,
     };
     setMenuItems([...menuItems, newItem]);
@@ -60,6 +72,15 @@ export function AdminDashboard() {
 
   const handleDeleteMenuItem = (id: string) => {
     setMenuItems(menuItems.filter(item => item.id !== id));
+  };
+
+  const handleEditMenuItem = (id: string) => {
+    setEditingMenuItem(id);
+  };
+
+  const handleSaveMenuItem = (id: string, name: string, price: number, category: string, available: boolean, description: string, stock: number) => {
+    setMenuItems(menuItems.map(item => item.id === id ? { ...item, name, price, category, available, description, stock } : item));
+    setEditingMenuItem(null);
   };
 
   return (
@@ -107,24 +128,62 @@ export function AdminDashboard() {
                   key={table.number}
                   className="bg-white p-4 rounded-lg shadow border"
                 >
-                  <div className="flex justify-between items-start">
+                  {editingTable === table.number ? (
                     <div>
-                      <h3 className="font-semibold">Table {table.number}</h3>
-                      <p className="text-sm text-gray-500">{table.seats} seats</p>
-                      <p className="text-sm text-gray-500 capitalize">{table.status}</p>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-semibold">Table {table.number}</h3>
+                          <input
+                            type="number"
+                            value={table.seats}
+                            onChange={(e) => setTables(tables.map(t => t.number === table.number ? { ...t, seats: parseInt(e.target.value) } : t))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                          />
+                          <select
+                            value={table.status}
+                            onChange={(e) => setTables(tables.map(t => t.number === table.number ? { ...t, status: e.target.value } : t))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                          >
+                            <option value="available">Available</option>
+                            <option value="occupied">Occupied</option>
+                            <option value="reserved">Reserved</option>
+                          </select>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleSaveTable(table.number, table.seats, table.status)}
+                            className="p-2 text-gray-400 hover:text-green-600"
+                          >
+                            <Save className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex space-x-2">
-                      <button className="p-2 text-gray-400 hover:text-indigo-600">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTable(table.number)}
-                        className="p-2 text-gray-400 hover:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                  ) : (
+                    <div>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-semibold">Table {table.number}</h3>
+                          <p className="text-sm text-gray-500">{table.seats} seats</p>
+                          <p className="text-sm text-gray-500 capitalize">{table.status}</p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEditTable(table.number)}
+                            className="p-2 text-gray-400 hover:text-indigo-600"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTable(table.number)}
+                            className="p-2 text-gray-400 hover:text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -149,25 +208,91 @@ export function AdminDashboard() {
                   key={item.id}
                   className="bg-white p-4 rounded-lg shadow border"
                 >
-                  <div className="flex justify-between items-start">
+                  {editingMenuItem === item.id ? (
                     <div>
-                      <h3 className="font-semibold">{item.name}</h3>
-                      <p className="text-sm text-gray-500">${item.price.toFixed(2)}</p>
-                      <p className="text-sm text-gray-500">Stock: {item.stock}</p>
-                      <p className="text-sm text-gray-500 capitalize">{item.category}</p>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => setMenuItems(menuItems.map(i => i.id === item.id ? { ...i, name: e.target.value } : i))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                          />
+                          <input
+                            type="number"
+                            value={item.price}
+                            onChange={(e) => setMenuItems(menuItems.map(i => i.id === item.id ? { ...i, price: parseFloat(e.target.value) } : i))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                          />
+                          <select
+                            value={item.category}
+                            onChange={(e) => setMenuItems(menuItems.map(i => i.id === item.id ? { ...i, category: e.target.value } : i))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                          >
+                            <option value="main">Main</option>
+                            <option value="sides">Sides</option>
+                            <option value="drinks">Drinks</option>
+                            <option value="desserts">Desserts</option>
+                          </select>
+                          <textarea
+                            value={item.description}
+                            onChange={(e) => setMenuItems(menuItems.map(i => i.id === item.id ? { ...i, description: e.target.value } : i))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                          />
+                          <input
+                            type="number"
+                            value={item.stock}
+                            onChange={(e) => setMenuItems(menuItems.map(i => i.id === item.id ? { ...i, stock: parseInt(e.target.value) } : i))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                          />
+                          <label className="flex items-center mt-2">
+                            <input
+                              type="checkbox"
+                              checked={item.available}
+                              onChange={(e) => setMenuItems(menuItems.map(i => i.id === item.id ? { ...i, available: e.target.checked } : i))}
+                              className="form-checkbox"
+                            />
+                            <span className="ml-2">Available</span>
+                          </label>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleSaveMenuItem(item.id, item.name, item.price, item.category, item.available, item.description, item.stock)}
+                            className="p-2 text-gray-400 hover:text-green-600"
+                          >
+                            <Save className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex space-x-2">
-                      <button className="p-2 text-gray-400 hover:text-indigo-600">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteMenuItem(item.id)}
-                        className="p-2 text-gray-400 hover:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                  ) : (
+                    <div>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-semibold">{item.name}</h3>
+                          <p className="text-sm text-gray-500">${item.price.toFixed(2)}</p>
+                          <p className="text-sm text-gray-500">Stock: {item.stock}</p>
+                          <p className="text-sm text-gray-500 capitalize">{item.category}</p>
+                          <p className="text-sm text-gray-500">{item.description}</p>
+                          <p className="text-sm text-gray-500">{item.available ? 'Available' : 'Unavailable'}</p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEditMenuItem(item.id)}
+                            className="p-2 text-gray-400 hover:text-indigo-600"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteMenuItem(item.id)}
+                            className="p-2 text-gray-400 hover:text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
