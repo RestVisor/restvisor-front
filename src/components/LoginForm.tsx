@@ -62,42 +62,6 @@ export function LoginForm() {
             />
           </div>
 
-          <div className="flex justify-center gap-4">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="role"
-                value="waiter"
-                checked={role === 'waiter'}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                disabled={loading}
-              />
-              <span className="ml-2">Waiter</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="role"
-                value="chef"
-                checked={role === 'chef'}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                disabled={loading}
-              />
-              <span className="ml-2">Chef</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="role"
-                value="admin"
-                checked={role === 'admin'}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                disabled={loading}
-              />
-              <span className="ml-2">Admin</span>
-            </label>
-          </div>
-
           <button 
             type="submit" 
             className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:opacity-50"
