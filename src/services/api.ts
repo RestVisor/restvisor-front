@@ -38,7 +38,11 @@ export const getMenuItemsAPI = async () => {
 
 export const submitOrderAPI = async (order: Order) => {
   try {
-    const response = await axios.post(`${API_URL}/orders`, order);
+    const response = await axios.post(`${API_URL}/orders`, order, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Error submitting order:', error);

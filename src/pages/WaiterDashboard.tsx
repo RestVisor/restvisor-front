@@ -1,33 +1,37 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTablesAndMenu } from '../hooks/useTablesAndMenu'; 
-import { Table, Product, Order, OrderDetail } from '../types'; 
-import { useAuth } from '../hooks/useAuth'; 
+import { useTablesAndMenu } from '../hooks/useTablesAndMenu';
+import { Table, Product, Order, OrderDetail } from '../types';
+import { useAuth } from '../hooks/useAuth';
 
 const WaiterDashboard = () => {
-  const { user, logout } = useAuth(); 
-  const { tables, menuItems, activeOrders, getTables, getMenuItems, addOrder, submitOrder } = useTablesAndMenu(); 
+  const { user, logout } = useAuth();
+  const { tables, menuItems, activeOrders, getTables, getMenuItems, addOrder, submitOrder } = useTablesAndMenu();
   const navigate = useNavigate();
 
+  // Estado de la orden actual
   const [currentOrder, setCurrentOrder] = useState<Order>({
     id: Date.now(),
-    tableNumber: 0,
+    tableNumber: 0,  // Inicialmente, no hay mesa seleccionada
     dateCreated: new Date(),
     state: 'pending',
     orderDetails: [],
   });
+
+  // Estado de la mesa seleccionada
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
 
-  
+  // Función para seleccionar una mesa
   const handleTableSelect = (table: Table) => {
     setSelectedTable(table);
+    // Actualizamos el `currentOrder` para asociarlo con el número de la mesa
     setCurrentOrder((prev) => ({
       ...prev,
-      tableNumber: table.numero,  
+      tableNumber: table.numero,  // Asignamos el número de mesa al pedido
     }));
   };
 
- 
+  // Función para agregar un producto al pedido
   const handleAddMenuItem = (product: Product) => {
     const newOrderDetail: OrderDetail = {
       id: Date.now(),
@@ -37,11 +41,11 @@ const WaiterDashboard = () => {
     };
     setCurrentOrder((prev) => ({
       ...prev,
-      orderDetails: [...prev.orderDetails, newOrderDetail],
+      orderDetails: [...prev.orderDetails, newOrderDetail],  // Añadimos el nuevo producto
     }));
   };
 
-  
+  // Función para actualizar la cantidad de un producto en el pedido
   const handleUpdateQuantity = (orderDetail: OrderDetail, newQuantity: number) => {
     if (newQuantity < 1) return; // No permitir cantidades negativas
     setCurrentOrder((prev) => ({
@@ -56,12 +60,17 @@ const WaiterDashboard = () => {
   const handleRemoveItem = (orderDetail: OrderDetail) => {
     setCurrentOrder((prev) => ({
       ...prev,
-      orderDetails: prev.orderDetails.filter((od) => od.id !== orderDetail.id),
+      orderDetails: prev.orderDetails.filter((od) => od.id !== orderDetail.id),  // Filtramos el producto
     }));
   };
 
   // Función para enviar el pedido
   const handleSubmitOrder = () => {
+    if (!selectedTable) {
+      alert('Please select a table first!');
+      return;  // No enviar el pedido si no hay mesa seleccionada
+    }
+    
     addOrder(currentOrder);  // Agregamos el pedido a la lista de órdenes activas
     submitOrder(currentOrder);  // Enviamos el pedido a la API
     setCurrentOrder({
@@ -70,7 +79,7 @@ const WaiterDashboard = () => {
       dateCreated: new Date(),
       state: 'pending',
       orderDetails: [],
-    });
+    });  // Limpiamos la orden actual
     setSelectedTable(null);  // Limpiamos la mesa seleccionada
     navigate('/orders');  // Navegamos a la página de órdenes
   };
@@ -106,7 +115,7 @@ const WaiterDashboard = () => {
                   className={`p-4 border rounded-lg cursor-pointer ${
                     table.state === 'occupied' ? 'bg-red-500' : 'bg-green-500'
                   }`}
-                  onClick={() => handleTableSelect(table)}
+                  onClick={() => handleTableSelect(table)}  // Al hacer clic, se asocia la mesa
                 >
                   <h3 className="text-xl">Table {table.numero}</h3>
                   <p>Status: {table.state}</p>
@@ -123,7 +132,7 @@ const WaiterDashboard = () => {
                 <div
                   key={item.id}
                   className="p-4 border rounded-lg cursor-pointer"
-                  onClick={() => handleAddMenuItem(item)}
+                  onClick={() => handleAddMenuItem(item)}  // Al hacer clic, se agrega el producto
                 >
                   <h3 className="text-lg">{item.name}</h3>
                   <p>{item.description}</p>
