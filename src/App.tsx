@@ -5,6 +5,7 @@ import { RegisterForm } from './components/RegisterForm';
 import AdminDashboard from './pages/AdminDashboard';
 import ChefDashboard from './pages/ChefDashboard';
 import WaiterDashboard from './pages/WaiterDashboard';
+import LandingPage from './pages/LandingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
       <AuthProvider>
         <Routes>
           {/* Public routes */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
 
@@ -42,8 +44,8 @@ function App() {
             }
           />
 
-          {/* Redirect root to login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* Catch all route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </Router>
