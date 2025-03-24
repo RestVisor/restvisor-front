@@ -88,7 +88,7 @@ La **pila de producto** se compone de las **Historias de Usuario (HU)** y las **
   3. **Descripción**: Como camarero, quiero poder actualizar el estado de una mesa (disponible, ocupada, reservada).  
   4. **Criterios de validación**:  
      - Actualizar estado en tiempo real.  
-     - No permite marcar como “Disponible” si hay un pedido activo.  
+     - No permite marcar como "Disponible" si hay un pedido activo.  
   5. **Estimación**: 5 puntos  
   6. **Prioridad**: Alta  
 
@@ -127,10 +127,10 @@ La **pila de producto** se compone de las **Historias de Usuario (HU)** y las **
 - **HU02.3 Enviar pedido a cocina**  
   1. **Identificador**: HU02.3  
   2. **Nombre**: Enviar pedido a cocina  
-  3. **Descripción**: Como camarero, quiero que el pedido se registre en la base de datos y aparezca en la interfaz de cocina como “Pendiente”.  
+  3. **Descripción**: Como camarero, quiero que el pedido se registre en la base de datos y aparezca en la interfaz de cocina como "Pendiente".  
   4. **Criterios de validación**:  
      - Notificación (opcional) cuando el pedido se envía.  
-     - El pedido cambia de estado a “Pendiente”.  
+     - El pedido cambia de estado a "Pendiente".  
   5. **Estimación**: 6 puntos  
   6. **Prioridad**: Alta  
 
@@ -159,17 +159,17 @@ La **pila de producto** se compone de las **Historias de Usuario (HU)** y las **
 - **HU03.2 Cambio de estado de un pedido en cocina**  
   1. **Identificador**: HU03.2  
   2. **Nombre**: Actualizar estado del pedido (Cocina)  
-  3. **Descripción**: Como cocinero, quiero marcar los pedidos como “En preparación” o “Listo” para notificar al camarero.  
+  3. **Descripción**: Como cocinero, quiero marcar los pedidos como "En preparación" o "Listo" para notificar al camarero.  
   4. **Criterios de validación**:  
      - Notificación instantánea a la vista del camarero.  
-     - Un pedido “Listo” no puede volver atrás.  
+     - Un pedido "Listo" no puede volver atrás.  
   5. **Estimación**: 4 puntos  
   6. **Prioridad**: Alta  
 
 - **HU03.3 Notificación al camarero cuando un pedido está listo**  
   1. **Identificador**: HU03.3  
   2. **Nombre**: Notificación de pedido listo  
-  3. **Descripción**: Como camarero, quiero recibir un aviso cuando la cocina marque un pedido como “Listo” para poder servirlo.  
+  3. **Descripción**: Como camarero, quiero recibir un aviso cuando la cocina marque un pedido como "Listo" para poder servirlo.  
   4. **Criterios de validación**:  
      - Avisa con alerta visual/sonora.  
      - Se indica la mesa a la que pertenece el pedido.  
@@ -191,7 +191,7 @@ La **pila de producto** se compone de las **Historias de Usuario (HU)** y las **
 
 1. **Identificador**: HU05  
 2. **Nombre**: Personalización de Pedidos  
-3. **Descripción**: Como camarero, quiero añadir notas (ej. “sin tomate”) para cada producto del pedido.  
+3. **Descripción**: Como camarero, quiero añadir notas (ej. "sin tomate") para cada producto del pedido.  
 4. **Criterios de validación**:  
    - Notas visibles para cocina en el pedido.  
    - Edición posible antes de enviar el pedido a cocina.  
@@ -218,6 +218,20 @@ La **pila de producto** se compone de las **Historias de Usuario (HU)** y las **
    - Cambios de disponibilidad se ven reflejados instantáneamente en la UI de camareros.  
    - Permisos restringidos a administradores.  
 5. **Estimación**: 6 puntos  
+6. **Prioridad**: Alta  
+
+#### HU08 - Página de Inicio (Landing Page)
+
+1. **Identificador**: HU08  
+2. **Nombre**: Página de Inicio de RestVisor  
+3. **Descripción**: Como usuario no registrado, quiero ver una página de inicio atractiva que presente RestVisor, sus características principales y beneficios para mi negocio de restauración.  
+4. **Criterios de validación**:  
+   - Diseño moderno y responsive que funcione en dispositivos móviles y escritorio.
+   - Secciones claras que muestren las características principales del producto.
+   - Llamadas a la acción (CTA) para registro/prueba del producto.
+   - Ejemplos visuales del producto en uso.
+   - Información de contacto y soporte.
+5. **Estimación**: 5 puntos  
 6. **Prioridad**: Alta  
 
 ### Historias Técnicas
