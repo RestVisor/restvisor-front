@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
-import { TablesAndMenuProvider } from './hooks/useTablesAndMenu'; // Importar el TablesAndMenuProvider
+import { TablesAndMenuProvider } from './hooks/useTablesAndMenu';
 import { LoginForm } from './components/LoginForm';
 import { RegisterForm } from './components/RegisterForm';
 import AdminDashboard from './pages/AdminDashboard';
@@ -12,7 +12,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <TablesAndMenuProvider>  {/* Envuelve el contenido dentro de TablesAndMenuProvider */}
+        <TablesAndMenuProvider>
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<LoginForm />} />

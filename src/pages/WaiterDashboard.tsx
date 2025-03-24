@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTablesAndMenu } from '../hooks/useTablesAndMenu'; // Importamos el contexto
-import { Table, Product, Order, OrderDetail } from '../types';  // Importamos los tipos
-import { useAuth } from '../hooks/useAuth';  // Importamos el contexto de autenticación
+import { useTablesAndMenu } from '../hooks/useTablesAndMenu'; 
+import { Table, Product, Order, OrderDetail } from '../types'; 
+import { useAuth } from '../hooks/useAuth'; 
 
 const WaiterDashboard = () => {
-  const { user, logout } = useAuth(); // Asumiendo que tienes un `useAuth` para manejar la autenticación
-  const { tables, menuItems, activeOrders, getTables, getMenuItems, addOrder, submitOrder } = useTablesAndMenu(); // Usamos el contexto para acceder a las mesas, menú y funciones
+  const { user, logout } = useAuth(); 
+  const { tables, menuItems, activeOrders, getTables, getMenuItems, addOrder, submitOrder } = useTablesAndMenu(); 
   const navigate = useNavigate();
 
   const [currentOrder, setCurrentOrder] = useState<Order>({
@@ -18,16 +18,16 @@ const WaiterDashboard = () => {
   });
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
 
-  // Función para seleccionar una mesa
+  
   const handleTableSelect = (table: Table) => {
     setSelectedTable(table);
     setCurrentOrder((prev) => ({
       ...prev,
-      tableNumber: table.numero,  // Asignamos el número de la mesa al pedido
+      tableNumber: table.numero,  
     }));
   };
 
-  // Función para agregar un producto al pedido
+ 
   const handleAddMenuItem = (product: Product) => {
     const newOrderDetail: OrderDetail = {
       id: Date.now(),
@@ -41,7 +41,7 @@ const WaiterDashboard = () => {
     }));
   };
 
-  // Función para actualizar la cantidad de un producto en el pedido
+  
   const handleUpdateQuantity = (orderDetail: OrderDetail, newQuantity: number) => {
     if (newQuantity < 1) return; // No permitir cantidades negativas
     setCurrentOrder((prev) => ({
