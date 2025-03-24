@@ -13,28 +13,29 @@ export interface AuthState {
 } 
 
 export interface Table {
-  id: number;             // Tipo id como número (int4 en la base de datos)
-  numero: number;         // Número de la mesa
-  state: string;          // Estado de la mesa (ocupada, libre, etc.)
+  id: number;
+  numero: number;         
+  state: string;          
 }
 
 export interface Order {
-  id: number;             // Tipo id como número (int4 en la base de datos)
-  tableNumber: number;    // Número de la mesa asociada al pedido
-  dateCreated: Date;      // Fecha y hora de creación del pedido (timestamp)
-  state: string;         // Estado del pedido (pendiente, completado, etc.)
+  id: number;   
+  tableNumber: number;   
+  dateCreated: Date;     
+  state: string;         
+  
 }
 
 export interface Product {
-  id: number;             // Tipo id como número (int4 en la base de datos)
-  name: string;           // Nombre del producto
-  description: string;    // Descripción del producto
-  price: number;          // Precio del producto (numérico en la base de datos)
+  id: number;            
+  name: string;           
+  description: string;   
+  price: number;         
 }
 
 export interface OrderDetail {
-  id: number;             // Tipo id como número (int4 en la base de datos)
-  order_id: number;      // Relación con el pedido (clave foránea)
-  product_id: number;    // Relación con el producto (clave foránea)
-  amount: number;       // Cantidad del producto en el pedido
+  id: number;           
+  order_id: number;      
+  product_id: number;   
+  amount: number;      
 }
