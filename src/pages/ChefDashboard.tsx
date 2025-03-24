@@ -1,8 +1,10 @@
 import { useAuth } from '../hooks/useAuth';
+import { getOrders } from '../hooks/orders';
 
 const ChefDashboard = () => {
   const { user, logout } = useAuth();
-
+  let orders = getOrders();
+  console.log(orders);
   return (
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-white shadow-lg">
