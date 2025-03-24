@@ -12,9 +12,9 @@ const WaiterDashboard = () => {
   // Estado de la orden actual
   const [currentOrder, setCurrentOrder] = useState<Order>({
     id: Date.now(),
-    tableNumber: 0,  // Inicialmente, no hay mesa seleccionada
+    tableNumber: 0,
     dateCreated: new Date(),
-    state: 'pending',
+    status: 'en preparación',
     orderDetails: [],
   });
 
@@ -45,17 +45,6 @@ const WaiterDashboard = () => {
     }));
   };
 
-  // Función para actualizar la cantidad de un producto en el pedido
-  const handleUpdateQuantity = (orderDetail: OrderDetail, newQuantity: number) => {
-    if (newQuantity < 1) return; // No permitir cantidades negativas
-    setCurrentOrder((prev) => ({
-      ...prev,
-      orderDetails: prev.orderDetails.map((od) =>
-        od.id === orderDetail.id ? { ...od, amount: newQuantity } : od
-      ),
-    }));
-  };
-
   // Función para eliminar un producto del pedido
   const handleRemoveItem = (orderDetail: OrderDetail) => {
     setCurrentOrder((prev) => ({
@@ -77,7 +66,7 @@ const WaiterDashboard = () => {
       id: Date.now(),
       tableNumber: 0,
       dateCreated: new Date(),
-      state: 'pending',
+      status: 'en preparación',
       orderDetails: [],
     });  // Limpiamos la orden actual
     setSelectedTable(null);  // Limpiamos la mesa seleccionada

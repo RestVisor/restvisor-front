@@ -22,7 +22,7 @@ export interface Order {
   id: number;
   tableNumber: number;
   dateCreated: Date;
-  state: string;
+  status: string;
   orderDetails: OrderDetail[];
 }
 
