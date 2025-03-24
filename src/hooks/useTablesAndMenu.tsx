@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, Product, Order } from '../types';
-import { getTablesAPI, getMenuItemsAPI, submitOrderAPI } from '../services/api';  // Renombramos las funciones importadas
+import { getTablesAPI, getMenuItemsAPI, submitOrderAPI } from '../services/api';
 
 interface TablesAndMenuContextType {
   tables: Table[];

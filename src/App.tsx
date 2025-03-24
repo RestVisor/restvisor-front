@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
+import { TablesAndMenuProvider } from './hooks/useTablesAndMenu'; // Importar el TablesAndMenuProvider
 import { LoginForm } from './components/LoginForm';
 import { RegisterForm } from './components/RegisterForm';
 import AdminDashboard from './pages/AdminDashboard';
@@ -11,40 +12,42 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/register" element={<RegisterForm />} />
+        <TablesAndMenuProvider>  {/* Envuelve el contenido dentro de TablesAndMenuProvider */}
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/register" element={<RegisterForm />} />
 
-          {/* Protected routes */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/chef"
-            element={
-              <ProtectedRoute allowedRoles={['chef']}>
-                <ChefDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/waiter"
-            element={
-              <ProtectedRoute allowedRoles={['waiter']}>
-                <WaiterDashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* Protected routes */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chef"
+              element={
+                <ProtectedRoute allowedRoles={['chef']}>
+                  <ChefDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/waiter"
+              element={
+                <ProtectedRoute allowedRoles={['waiter']}>
+                  <WaiterDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Redirect root to login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-        </Routes>
+            {/* Redirect root to login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </TablesAndMenuProvider>
       </AuthProvider>
     </Router>
   );

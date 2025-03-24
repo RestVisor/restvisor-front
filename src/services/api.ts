@@ -1,15 +1,23 @@
 import axios from 'axios';
-import { Table } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL;
+const token = localStorage.getItem('token');
 
-export const getTablesAPI = async (): Promise<Table[]> => {
+export const getTablesAPI = async () => {
+  if (!token) {
+    throw new Error('No token found, please log in');
+  }
+
   try {
-    const response = await axios.get(`${API_URL}/tables`);
-    return response.data;  // Se asegura que la respuesta sea un arreglo de mesas
+    const response = await axios.get(`${API_URL}/tables`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
   } catch (error) {
     console.error('Error fetching tables:', error);
-    return [];  // Devuelve un arreglo vacío si ocurre un error
+    throw error;
   }
 };
 
