@@ -1,23 +1,13 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getOrders } from '../services/api'
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export const getOrders = async() => {
+export const getOrderList = async() => {
 
-    const res = await fetch(`${API_URL}/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-    });
+    const res = await getOrders();
 
-    if (!res.ok) {
-        throw new Error('GetOrders failed');
-    }
-
-    const data = await res.json();
-
-    console.log(data);
+    console.log(res);
 
 };

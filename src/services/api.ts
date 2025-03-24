@@ -49,3 +49,17 @@ export const submitOrderAPI = async (order: Order) => {
     return null;
   }
 };
+
+export const getOrders = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/orders`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error getting order:', error);
+    return null;
+  }
+};
