@@ -15,7 +15,7 @@ export interface AuthState {
 export interface Table {
   id: number;
   numero: number;
-  state: string;
+  estado: string;
 }
 
 export interface Order {
