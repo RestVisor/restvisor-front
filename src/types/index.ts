@@ -21,7 +21,7 @@ export interface Table {
 export interface Order {
   id: number;
   tableNumber: number;
-  dateCreated: Date;
+  created_at: string;
   status: string;
   orderDetails: OrderDetail[];
 }
@@ -36,6 +36,6 @@ export interface Product {
 export interface OrderDetail {
   id: number;
   order_id: number;
-  product_id: number;
-  amount: number;
+  producto_id: number;
+  cantidad: number;
 }

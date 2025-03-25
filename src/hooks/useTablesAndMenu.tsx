@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, Product, Order } from '../types';
-import { getTablesAPI, getMenuItemsAPI, submitOrderAPI } from '../services/api';
+import { getTablesAPI, getMenuItemsAPI, submitOrderAPI, submitDetailOrderAPI } from '../services/api';
 
 interface TablesAndMenuContextType {
   tables: Table[];
@@ -51,11 +51,24 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
   const submitOrder = async (order: Order) => {
     try {
       const response = await submitOrderAPI(order); 
-      setActiveOrders((prevOrders) =>
-        prevOrders.filter((activeOrder) => activeOrder.id !== order.id)
-      );
       console.log('Order submitted:', response); 
-      navigate('/orders'); 
+  
+      if (response == null) {
+        const orderId = order.id;
+        
+        console.log('Order ID:', orderId); // Agregado para depuración
+
+        await Promise.all(
+          order.orderDetails.map(async (detail) => {
+            await submitDetailOrderAPI(orderId, detail);
+          })
+        );
+  
+        setActiveOrders((prevOrders) =>
+          prevOrders.filter((activeOrder) => activeOrder.id !== order.id)
+        );
+        navigate('/orders');
+      }
     } catch (error) {
       console.error('Error submitting order:', error); 
     }

@@ -7,13 +7,13 @@ import { useAuth } from '../hooks/useAuth';
 const WaiterDashboard = () => {
   const { user, logout } = useAuth();
   const { tables, menuItems, activeOrders, getTables, getMenuItems, addOrder, submitOrder } = useTablesAndMenu();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); //PARA IR A OTRAS PAGINAS
 
   // Estado de la orden actual
   const [currentOrder, setCurrentOrder] = useState<Order>({
     id: Date.now(),
     tableNumber: 0,
-    dateCreated: new Date().toDateString(),
+    created_at: new Date().toDateString(),
     status: 'en preparación',
     orderDetails: [],
   });
@@ -37,8 +37,8 @@ const WaiterDashboard = () => {
     const newOrderDetail: OrderDetail = {
       id: Date.now(),
       order_id: currentOrder.id,
-      product_id: product.id,
-      amount: 1,
+      producto_id: product.id,
+      cantidad: 1,
     };
     setCurrentOrder((prev) => ({
       ...prev,
@@ -68,11 +68,12 @@ const WaiterDashboard = () => {
     setCurrentOrder({
       id: Date.now(),
       tableNumber: 0,
-      dateCreated: new Date().toDateString(),
+      created_at: new Date().toDateString(),
       status: 'en preparación',
       orderDetails: [],
     });  // Limpiamos la orden actual
     setSelectedTable(null);  // Limpiamos la mesa seleccionada
+
   };
 
   return (
@@ -143,7 +144,7 @@ const WaiterDashboard = () => {
                   {currentOrder.orderDetails.map((orderDetail) => (
                     <li key={orderDetail.id} className="flex justify-between items-center">
                       <span>
-                        {orderDetail.amount} x {menuItems.find(item => item.id === orderDetail.product_id)?.name}
+                        {orderDetail.cantidad} x {menuItems.find(item => item.id === orderDetail.producto_id)?.name}
                       </span>
                       <button
                         onClick={() => handleRemoveItem(orderDetail)}

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Order } from '../types';
+import { Order, OrderDetail } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const token = localStorage.getItem('token');
@@ -46,6 +46,27 @@ export const submitOrderAPI = async (order: Order) => {
     return response.data;
   } catch (error) {
     console.error('Error submitting order:', error);
+    return null;
+  }
+};
+
+export const submitDetailOrderAPI = async (orderId: number, detail: OrderDetail) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/orderDetails`, 
+      { 
+        ...detail, 
+        pedido_id: orderId
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error submitting order detail:', error);
     return null;
   }
 };
