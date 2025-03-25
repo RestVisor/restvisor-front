@@ -1,4 +1,5 @@
 import { useAuth } from "../hooks/useAuth";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -11,50 +12,87 @@ interface Product {
   category: string;
 }
 
-const AddProductForm = () => {
+const AdminProductManagement = () => {
   const { user, logout } = useAuth();
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<Product>();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(`${API_URL}/products`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
 
   const onSubmit = async (data: Product) => {
     try {
-      const token = localStorage.getItem('token'); // O donde guardes el token
-  
-      if (!token) {
-        throw new Error("Token no encontrado, no autenticado");
-      }
-  
-      const response = await fetch(`${API_URL}/products`, {
-        method: "POST",
+      const method = editingProduct ? "PUT" : "POST";
+      const url = editingProduct ? `${API_URL}/products/${editingProduct.id}` : `${API_URL}/products`;
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // Agregar token al encabezado
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(data),
       });
-  
-      if (!response.ok) {
-        throw new Error("Failed to add product");
-      }
-  
-      const result = await response.json();
-      console.log("Product added:", result);
-      alert("Product added successfully");
+      if (!response.ok) throw new Error("Failed to save product");
+      fetchProducts();
       reset();
-    } catch (error: unknown) { // Aseguramos que el tipo de error sea "Error"
-      if (error instanceof Error) { // Comprobamos si el error es una instancia de Error
-        console.error("Error adding product:", error.message);
-      } else {
-        console.error("An unknown error occurred");
-      }
+      setEditingProduct(null);
+    } catch (error) {
+      console.error("Error saving product:", error);
     }
   };
-  
-  
+
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product);
+    setValue("id", product.id);
+    setValue("name", product.name);
+    setValue("description", product.description);
+    setValue("price", product.price);
+    setValue("category", product.category);
+  };
+
+  const handleCancelEdit = () => {
+    reset();
+    setEditingProduct(null);
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await fetch(`${API_URL}/products/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to delete product");
+      setProducts(products.filter((product) => product.id !== id));
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-white shadow-lg">
@@ -75,7 +113,7 @@ const AddProductForm = () => {
       </nav>
       <main className="max-w-7xl mx-auto py-6 px-4">
         <div className="bg-white p-6 rounded-lg shadow max-w-lg mx-auto">
-          <h2 className="text-2xl font-semibold mb-4">Add New Product</h2>
+          <h2 className="text-2xl font-semibold mb-4">{editingProduct ? "Edit Product" : "Add New Product"}</h2>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="block text-gray-700">ID</label>
@@ -83,8 +121,8 @@ const AddProductForm = () => {
                 type="number"
                 {...register("id", { required: "ID is required" })}
                 className="w-full p-2 border border-gray-300 rounded mt-1"
+                disabled={!!editingProduct}
               />
-              {errors.id && <p className="text-red-500 text-sm">{errors.id.message}</p>}
             </div>
             <div>
               <label className="block text-gray-700">Name</label>
@@ -93,7 +131,6 @@ const AddProductForm = () => {
                 {...register("name", { required: "Name is required" })}
                 className="w-full p-2 border border-gray-300 rounded mt-1"
               />
-              {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
             </div>
             <div>
               <label className="block text-gray-700">Description</label>
@@ -101,7 +138,6 @@ const AddProductForm = () => {
                 {...register("description", { required: "Description is required" })}
                 className="w-full p-2 border border-gray-300 rounded mt-1"
               ></textarea>
-              {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
             </div>
             <div>
               <label className="block text-gray-700">Price</label>
@@ -111,7 +147,6 @@ const AddProductForm = () => {
                 {...register("price", { required: "Price is required" })}
                 className="w-full p-2 border border-gray-300 rounded mt-1"
               />
-              {errors.price && <p className="text-red-500 text-sm">{errors.price.message}</p>}
             </div>
             <div>
               <label className="block text-gray-700">Category</label>
@@ -120,19 +155,43 @@ const AddProductForm = () => {
                 {...register("category", { required: "Category is required" })}
                 className="w-full p-2 border border-gray-300 rounded mt-1"
               />
-              {errors.category && <p className="text-red-500 text-sm">{errors.category.message}</p>}
             </div>
-            <button
-              type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
-            >
-              Add Product
-            </button>
+            <div className="flex space-x-2">
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+              >
+                {editingProduct ? "Update Product" : "Add Product"}
+              </button>
+              {editingProduct && (
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 w-full"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </form>
+        </div>
+        <div className="mt-8 bg-white p-6 rounded-lg shadow">
+          <h2 className="text-2xl font-semibold mb-4">Product List</h2>
+          <ul>
+            {products.map((product) => (
+              <li key={product.id} className="flex justify-between border-b py-2">
+                <span>{product.name} - ${product.price}</span>
+                <div>
+                  <button onClick={() => handleEdit(product)} className="text-blue-500 mr-2">Edit</button>
+                  <button onClick={() => handleDelete(product.id)} className="text-red-500">Delete</button>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       </main>
     </div>
   );
 };
 
-export default AddProductForm;
+export default AdminProductManagement;
