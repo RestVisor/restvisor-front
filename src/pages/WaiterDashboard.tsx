@@ -13,7 +13,7 @@ const WaiterDashboard = () => {
   const [currentOrder, setCurrentOrder] = useState<Order>({
     id: Date.now(),
     tableNumber: 0,
-    dateCreated: new Date(),
+    dateCreated: new Date().toDateString(),
     status: 'en preparación',
     orderDetails: [],
   });
@@ -29,6 +29,7 @@ const WaiterDashboard = () => {
       ...prev,
       tableNumber: table.numero,  // Asignamos el número de mesa al pedido
     }));
+    console.log(`Table selected: ${table.numero}`);  // Comprobación para verificar el cambio de número de mesa
   };
 
   // Función para agregar un producto al pedido
@@ -59,18 +60,19 @@ const WaiterDashboard = () => {
       alert('Please select a table first!');
       return;  // No enviar el pedido si no hay mesa seleccionada
     }
+
+    console.log(`Order ready for upload: ${JSON.stringify(currentOrder)}`);
     
     addOrder(currentOrder);  // Agregamos el pedido a la lista de órdenes activas
     submitOrder(currentOrder);  // Enviamos el pedido a la API
     setCurrentOrder({
       id: Date.now(),
       tableNumber: 0,
-      dateCreated: new Date(),
+      dateCreated: new Date().toDateString(),
       status: 'en preparación',
       orderDetails: [],
     });  // Limpiamos la orden actual
     setSelectedTable(null);  // Limpiamos la mesa seleccionada
-    navigate('/orders');  // Navegamos a la página de órdenes
   };
 
   return (
