@@ -60,6 +60,7 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
         await Promise.all(
           order.orderDetails.map(async (detail) => {
             await submitDetailOrderAPI(orderId, detail);
+            console.log('Detail submitted:', detail); // Agregado para depuración
           })
         );
   
