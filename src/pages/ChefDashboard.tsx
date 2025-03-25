@@ -1,10 +1,28 @@
 import { useAuth } from '../hooks/useAuth';
 import { getOrderList } from '../hooks/orders';
+import { Order } from '../types'
+import { useState, useEffect } from "react";
 
 const ChefDashboard = () => {
+  const [pedidos, setPedidos] = useState<Order[]>([]);
   const { user, logout } = useAuth();
-  let orders = getOrderList();
-  console.log(orders);
+  
+  useEffect(() => {
+
+    const fetchPedidos = async () => {
+      try {
+        const listaPedidos = await getOrderList();
+        console.log(listaPedidos);
+        setPedidos(listaPedidos);
+      } catch (error) {
+        console.error("Error al obtener pedidos:", error);
+      }
+    };
+  
+    fetchPedidos();
+
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-white shadow-lg">
@@ -25,19 +43,22 @@ const ChefDashboard = () => {
       </nav>
 
       <main className="max-w-7xl mx-auto py-6 px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
           <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-4">Active Orders</h2>
             <p className="text-gray-600">View and manage current kitchen orders</p>
+            <div className="flex flex-wrap gap-4">
+              {pedidos.map((pedido) => (
+                <div key={pedido.id} className="p-3 border rounded-lg shadow-sm bg-white">
+                  <p><strong>ID:</strong> {pedido.id}</p>
+                  <p><strong>Fecha:</strong> {pedido.created_at}</p>
+                  <p><strong>Estado:</strong> {pedido.status}</p>
+                  <p><strong>Mesa:</strong> {pedido.tableNumber}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Menu Management</h2>
-            <p className="text-gray-600">Update menu items and specials</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Kitchen Inventory</h2>
-            <p className="text-gray-600">Track ingredients and supplies</p>
-          </div>
+         
         </div>
       </main>
     </div>

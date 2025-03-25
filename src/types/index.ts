@@ -21,9 +21,8 @@ export interface Table {
 export interface Order {
   id: number;
   tableNumber: number;
-  dateCreated: Date;
-  state: string;
-  orderDetails: OrderDetail[];
+  created_at: string;
+  status: string;
 }
 
 export interface Product {
