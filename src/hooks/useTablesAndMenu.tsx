@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { Table, Product, Order } from '../types';
 import { getTablesAPI, getMenuItemsAPI, submitOrderAPI, submitDetailOrderAPI } from '../services/api';
 
@@ -19,7 +19,6 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
   const [tables, setTables] = useState<Table[]>([]);
   const [menuItems, setMenuItems] = useState<Product[]>([]);
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     getTables(); 
@@ -53,7 +52,7 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
       const response = await submitOrderAPI(order); 
       console.log('Order submitted:', response); 
   
-      if (response == null) {
+      if (response != 500) {
         const orderId = order.id;
         
         console.log('Order ID:', orderId); // Agregado para depuración
@@ -67,7 +66,6 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
         setActiveOrders((prevOrders) =>
           prevOrders.filter((activeOrder) => activeOrder.id !== order.id)
         );
-        navigate('/orders');
       }
     } catch (error) {
       console.error('Error submitting order:', error); 
