@@ -34,16 +34,37 @@ const WaiterDashboard = () => {
 
   // Función para agregar un producto al pedido
   const handleAddMenuItem = (product: Product) => {
-    const newOrderDetail: OrderDetail = {
-      id: Date.now(),
-      order_id: currentOrder.id,
-      producto_id: product.id,
-      cantidad: 1,
-    };
-    setCurrentOrder((prev) => ({
-      ...prev,
-      orderDetails: [...prev.orderDetails, newOrderDetail],  // Añadimos el nuevo producto
-    }));
+    setCurrentOrder((prev) => {
+      // Verificamos si el producto ya está en la lista de detalles de la orden
+      const existingOrderDetail = prev.orderDetails.find(
+        (orderDetail) => orderDetail.producto_id === product.id
+      );
+
+      if (existingOrderDetail) {
+        // Si el producto ya existe, incrementamos la cantidad
+        return {
+          ...prev,
+          orderDetails: prev.orderDetails.map((orderDetail) =>
+            orderDetail.producto_id === product.id
+              ? { ...orderDetail, cantidad: orderDetail.cantidad + 1 }
+              : orderDetail
+          ),
+        };
+      } else {
+        // Si el producto no está en la orden, lo agregamos con cantidad 1
+        const newOrderDetail: OrderDetail = {
+          id: Date.now(),
+          order_id: prev.id,
+          producto_id: product.id,
+          cantidad: 1,
+        };
+
+        return {
+          ...prev,
+          orderDetails: [...prev.orderDetails, newOrderDetail],  // Añadimos el nuevo producto
+        };
+      }
+    });
   };
 
   // Función para eliminar un producto del pedido
@@ -62,7 +83,7 @@ const WaiterDashboard = () => {
     }
 
     console.log(`Order ready for upload: ${JSON.stringify(currentOrder)}`);
-    
+
     addOrder(currentOrder);  // Agregamos el pedido a la lista de órdenes activas
     submitOrder(currentOrder);  // Enviamos el pedido a la API
     setCurrentOrder({
@@ -104,9 +125,8 @@ const WaiterDashboard = () => {
               {tables.map((table) => (
                 <div
                   key={table.id}
-                  className={`p-4 border rounded-lg cursor-pointer ${
-                    table.state === 'occupied' ? 'bg-red-500' : 'bg-green-500'
-                  }`}
+                  className={`p-4 border rounded-lg cursor-pointer ${table.state === 'occupied' ? 'bg-red-500' : 'bg-green-500'
+                    }`}
                   onClick={() => handleTableSelect(table)}  // Al hacer clic, se asocia la mesa
                 >
                   <h3 className="text-xl">Table {table.numero}</h3>
@@ -144,7 +164,8 @@ const WaiterDashboard = () => {
                   {currentOrder.orderDetails.map((orderDetail) => (
                     <li key={orderDetail.id} className="flex justify-between items-center">
                       <span>
-                        {orderDetail.cantidad} x {menuItems.find(item => item.id === orderDetail.producto_id)?.name}
+                        {menuItems.find(item => item.id === orderDetail.producto_id)?.name}
+                        {orderDetail.cantidad > 1 ? ` x${orderDetail.cantidad}` : ''}
                       </span>
                       <button
                         onClick={() => handleRemoveItem(orderDetail)}
