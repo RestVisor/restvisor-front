@@ -13,8 +13,8 @@ const WaiterDashboard = () => {
   const [currentOrder, setCurrentOrder] = useState<Order>({
     id: Date.now(),
     tableNumber: 0,  // Inicialmente, no hay mesa seleccionada
-    dateCreated: new Date(),
-    state: 'pending',
+    created_at: new Date(),
+    status: 'en preparación',
     orderDetails: [],
   });
 
@@ -76,8 +76,8 @@ const WaiterDashboard = () => {
     setCurrentOrder({
       id: Date.now(),
       tableNumber: 0,
-      dateCreated: new Date(),
-      state: 'pending',
+      created_at: new Date(),
+      status: 'en preparación',
       orderDetails: [],
     });  // Limpiamos la orden actual
     setSelectedTable(null);  // Limpiamos la mesa seleccionada
