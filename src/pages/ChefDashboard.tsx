@@ -1,6 +1,6 @@
 import { useAuth } from '../hooks/useAuth';
 import { getOrderList } from '../hooks/orders';
-import { Order } from '../types'
+import { Order } from '../types';
 import { useState, useEffect } from "react";
 
 const ChefDashboard = () => {
@@ -8,20 +8,34 @@ const ChefDashboard = () => {
   const { user, logout } = useAuth();
   
   useEffect(() => {
-
     const fetchPedidos = async () => {
       try {
         const listaPedidos = await getOrderList();
-        console.log(listaPedidos);
         setPedidos(listaPedidos);
       } catch (error) {
         console.error("Error al obtener pedidos:", error);
       }
     };
-  
     fetchPedidos();
-
   }, []);
+
+  const updateOrderStatus = (id, newStatus) => {
+    console.log(id, newStatus)
+    setPedidos(prevPedidos =>
+      prevPedidos.map(pedido =>
+        pedido.id == id ? { ...pedido, status: newStatus } : pedido
+      )
+    );
+  };
+
+  const handleDragStart = (e, id) => {
+    e.dataTransfer.setData("id", id);
+  };
+
+  const handleDrop = (e, newStatus) => {
+    const id = e.dataTransfer.getData("id");
+    updateOrderStatus(id, newStatus);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -43,26 +57,35 @@ const ChefDashboard = () => {
       </nav>
 
       <main className="max-w-7xl mx-auto py-6 px-4">
-        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Active Orders</h2>
-            <p className="text-gray-600">View and manage current kitchen orders</p>
-            <div className="flex flex-wrap gap-4">
-              {pedidos.map((pedido) => (
-                <div key={pedido.id} className="p-3 border rounded-lg shadow-sm bg-white">
-                  <p><strong>ID:</strong> {pedido.id}</p>
-                  <p><strong>Fecha:</strong> {pedido.created_at}</p>
-                  <p><strong>Estado:</strong> {pedido.status}</p>
-                  <p><strong>Mesa:</strong> {pedido.tableNumber}</p>
-                </div>
-              ))}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {["Recibido", "En Preparación", "Terminado"].map(status => (
+            <div 
+              key={status} 
+              className="bg-white p-6 rounded-lg shadow min-h-[300px]"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => handleDrop(e, status)}
+            >
+              <h2 className="text-xl font-semibold mb-4">{status}</h2>
+              <div className="space-y-4">
+                {pedidos.filter(pedido => pedido.status.toLowerCase() === status.toLowerCase()).map((pedido) => (
+                  <div 
+                    key={pedido.id} 
+                    className="p-3 border rounded-lg shadow-sm bg-gray-50 cursor-grab"
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, pedido.id)}
+                  >
+                    <p><strong>ID:</strong> {pedido.id}</p>
+                    <p><strong>Fecha:</strong> {pedido.created_at}</p>
+                    <p><strong>Mesa:</strong> {pedido.tableNumber}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-         
+          ))}
         </div>
       </main>
     </div>
   );
 };
 
-export default ChefDashboard; 
+export default ChefDashboard;
