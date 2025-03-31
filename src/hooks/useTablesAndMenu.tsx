@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-
 import { Table, Product, Order } from '../types';
 import { getTablesAPI, getMenuItemsAPI, submitOrderAPI, submitDetailOrderAPI } from '../services/api';
 
@@ -7,6 +6,7 @@ interface TablesAndMenuContextType {
   tables: Table[];
   menuItems: Product[];
   activeOrders: Order[];
+  pendingOrders: Order[];
   getTables: () => void;
   getMenuItems: () => void;
   addOrder: (order: Order) => void;
@@ -16,60 +16,82 @@ interface TablesAndMenuContextType {
 const TablesAndMenuContext = createContext<TablesAndMenuContextType | null>(null);
 
 export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode }) => {
+  // Declaramos el estado de las órdenes y las mesas dentro de la función
   const [tables, setTables] = useState<Table[]>([]);
   const [menuItems, setMenuItems] = useState<Product[]>([]);
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
+  const [pendingOrders, setPendingOrders] = useState<Order[]>([]); // Estado para los pedidos pendientes
 
   useEffect(() => {
-    getTables(); 
+    getTables();
     getMenuItems();
   }, []);
 
-  const getTables = async () => {  
+  const getTables = async () => {
     try {
-      const tablesData = await getTablesAPI(); 
+      const tablesData = await getTablesAPI();
       setTables(tablesData);
     } catch (error) {
-      console.error('Error fetching tables:', error); 
+      console.error('Error fetching tables:', error);
     }
   };
 
-  const getMenuItems = async () => {  
+  const getMenuItems = async () => {
     try {
-      const menuData = await getMenuItemsAPI(); 
-      setMenuItems(menuData); 
+      const menuData = await getMenuItemsAPI();
+      setMenuItems(menuData);
     } catch (error) {
-      console.error('Error fetching menu items:', error); 
+      console.error('Error fetching menu items:', error);
     }
   };
 
   const addOrder = (order: Order) => {
-    setActiveOrders((prevOrders) => [...prevOrders, order]);  
+    const existingPendingOrder = pendingOrders.find(
+      (pendingOrder) => pendingOrder.tableNumber === order.tableNumber
+    );
+
+    if (existingPendingOrder) {
+      const updatedOrder = {
+            ...existingPendingOrder,
+            orderDetails: order.orderDetails,
+      };
+
+      setPendingOrders((prevOrders) =>
+        prevOrders.map((pendingOrder) =>
+          pendingOrder.id === existingPendingOrder.id ? updatedOrder : pendingOrder
+        )
+      );
+    } else {
+      // Si no existe un pedido pendiente, agregamos un nuevo pedido a pendingOrders
+      setPendingOrders((prevOrders) => [...prevOrders, order]);
+    }
   };
 
   const submitOrder = async (order: Order) => {
     try {
-      const response = await submitOrderAPI(order); 
-      console.log('Order submitted:', response); 
-  
-      if (response != 500) {
+      const response = await submitOrderAPI(order);
+      console.log('Order submitted:', response);
+
+      if (response !== 500) {
         const orderId = order.id;
-        
-        console.log('Order ID:', orderId); // Agregado para depuración
+
+        console.log('Order ID:', orderId); // Para depuración
 
         await Promise.all(
           order.orderDetails.map(async (detail) => {
             await submitDetailOrderAPI(orderId, detail);
-            console.log('Detail submitted:', detail); // Agregado para depuración
+            console.log('Detail submitted:', detail); // Para depuración
           })
         );
-  
-        setActiveOrders((prevOrders) =>
-          prevOrders.filter((activeOrder) => activeOrder.id !== order.id)
+
+        // Mover el pedido de pendingOrders a activeOrders
+        setActiveOrders((prevOrders) => [...prevOrders, order]);
+        setPendingOrders((prevOrders) =>
+          prevOrders.filter((pendingOrder) => pendingOrder.id !== order.id)
         );
       }
     } catch (error) {
-      console.error('Error submitting order:', error); 
+      console.error('Error submitting order:', error);
     }
   };
 
@@ -79,6 +101,7 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
         tables,
         menuItems,
         activeOrders,
+        pendingOrders,
         getTables,
         getMenuItems,
         addOrder,

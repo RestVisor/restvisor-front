@@ -9,7 +9,7 @@ import OrderStatus from '../components/waiter/OrderStatus';  // Importar el comp
 
 const WaiterDashboard = () => {
   const { user, logout } = useAuth();
-  const { tables, menuItems, activeOrders, getTables, getMenuItems, addOrder, submitOrder } = useTablesAndMenu();
+  const { tables, menuItems, activeOrders, pendingOrders, getTables, getMenuItems, addOrder, submitOrder } = useTablesAndMenu();
   const navigate = useNavigate();
 
   // Estado de la orden actual
@@ -26,11 +26,34 @@ const WaiterDashboard = () => {
 
   // Función para seleccionar una mesa
   const handleTableSelect = (table: Table) => {
-    setSelectedTable(table);
-    setCurrentOrder((prev) => ({
-      ...prev,
-      tableNumber: table.numero,
-    }));
+
+      // Antes de cambiar de mesa, guardar el pedido actual si tiene mesa asignada
+      if (currentOrder.tableNumber !== 0) {
+          addOrder(currentOrder);
+      }
+      setSelectedTable(table);
+
+       console.log(pendingOrders)
+      // Buscar si existe un pedido pendiente para esta mesa en pendingOrders
+      const existingPendingOrder = pendingOrders.find(
+        (order) => order.tableNumber === table.numero
+      );
+
+      if (existingPendingOrder) {
+        // Si existe un pedido pendiente, lo restauramos
+        setCurrentOrder(existingPendingOrder);
+      } else {
+        // Si no existe un pedido, creamos uno nuevo vacío
+        const newOrder: Order = {
+          id: Date.now(),
+          tableNumber: table.numero,
+          status: 'pendiente',
+          created_at: new Date().toDateString(),
+          orderDetails: [],
+        };
+        setCurrentOrder(newOrder); // Actualizamos el estado de currentOrder
+        addOrder(newOrder); // Llamamos a addOrder con el nuevo pedido
+      }
   };
 
   // Función para agregar un producto al pedido
