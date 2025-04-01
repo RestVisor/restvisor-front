@@ -17,7 +17,7 @@ const WaiterDashboard = () => {
     id: Date.now(),
     tableNumber: 0,
     created_at: new Date().toDateString(),
-    status: 'en preparación',
+    status: '',
     orderDetails: [],
   });
 
@@ -47,7 +47,7 @@ const WaiterDashboard = () => {
         const newOrder: Order = {
           id: Date.now(),
           tableNumber: table.numero,
-          status: 'pendiente',
+          status: 'pending',
           created_at: new Date().toDateString(),
           orderDetails: [],
         };
@@ -102,14 +102,13 @@ const WaiterDashboard = () => {
       alert('Please select a table first!');
       return;
     }
-
     addOrder(currentOrder);
     submitOrder(currentOrder);
     setCurrentOrder({
       id: Date.now(),
       tableNumber: 0,
       created_at: new Date().toDateString(),
-      status: 'en preparación',
+      status: '',
       orderDetails: [],
     });
     setSelectedTable(null);

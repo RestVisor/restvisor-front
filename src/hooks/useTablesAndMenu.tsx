@@ -69,15 +69,11 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
 
   const submitOrder = async (order: Order) => {
     try {
-      const updatedOrder = {
-            ...order,
-            status: 'en preparación',
-          };
-      const response = await submitOrderAPI(updatedOrder);
+      const response = await submitOrderAPI(order);
       console.log('Order submitted:', response);
 
       if (response !== 500) {
-        const orderId = updatedOrder.id;
+        const orderId = order.id;
 
         console.log('Order ID:', orderId); // Para depuración
 
@@ -89,9 +85,9 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
         );
 
         // Mover el pedido de pendingOrders a activeOrders
-        setActiveOrders((prevOrders) => [...prevOrders, updatedOrder]);
+        setActiveOrders((prevOrders) => [...prevOrders, order]);
         setPendingOrders((prevOrders) =>
-          prevOrders.filter((pendingOrder) => pendingOrder.id !== updatedOrder.id)
+          prevOrders.filter((pendingOrder) => pendingOrder.id !== order.id)
         );
       }
     } catch (error) {
