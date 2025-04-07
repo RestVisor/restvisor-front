@@ -82,7 +82,7 @@ export const authService = {
     if (!token) return false;
 
     try {
-      const response = await axios.get(`${API_URL}/usuarios/validate`, {
+      const response = await axios.get(`${API_URL}/users/validate`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -118,7 +118,7 @@ export const authService = {
       // Validate input with Zod schema
       const loginData: LoginRequest = { email, password };
       
-      const response = await axios.post(`${API_URL}/usuarios/login`, loginData);
+      const response = await axios.post(`${API_URL}/users/login`, loginData);
       
       // Validate response with Zod schema
       const result = AuthResponseSchema.safeParse(response.data);
@@ -143,7 +143,7 @@ export const authService = {
       // Validate input with Zod schema
       const registerData: RegisterRequest = { name, email, password, role: role as any };
       
-      const response = await axios.post(`${API_URL}/usuarios/register`, registerData);
+      const response = await axios.post(`${API_URL}/users/register`, registerData);
       
       // Validate response with Zod schema
       const result = AuthResponseSchema.safeParse(response.data);

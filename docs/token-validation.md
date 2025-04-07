@@ -39,7 +39,7 @@ async validateToken(): Promise<boolean> {
   if (!token) return false;
 
   try {
-    const response = await axios.get(`${API_URL}/usuarios/validate`, {
+    const response = await axios.get(`${API_URL}/users/validate`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     
@@ -98,7 +98,7 @@ Tokens should be validated in the following scenarios:
 
 ## Backend Validation Endpoint
 
-The backend validation endpoint (`/usuarios/validate`) performs the following checks:
+The backend validation endpoint (`/users/validate`) performs the following checks:
 
 1. **Token Format**: Verifies that the token is a valid JWT
 2. **Token Signature**: Verifies that the token was signed by the server
@@ -145,7 +145,7 @@ To debug token validation issues, you can enable detailed logging:
 ```typescript
 // In authService.ts
 console.log('Token validation request:', {
-  url: `${API_URL}/usuarios/validate`,
+  url: `${API_URL}/users/validate`,
   headers: { Authorization: `Bearer ${token}` }
 });
 

@@ -187,9 +187,9 @@ console.log('Token validation result:', isValid);
 
 ### Authentication Endpoints
 
-- **Login**: `POST /usuarios/login`
-- **Register**: `POST /usuarios/register`
-- **Validate Token**: `GET /usuarios/validate`
+- **Login**: `POST /users/login`
+- **Register**: `POST /users/register`
+- **Validate Token**: `GET /users/validate`
 
 ### Request/Response Formats
 

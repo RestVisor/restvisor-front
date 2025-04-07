@@ -71,7 +71,7 @@ const AdminDashboard = () => {
             };
 
             if (activeTab === 'users') {
-                const response = await fetch(`${API_URL}/usuarios`, { headers });
+                const response = await fetch(`${API_URL}/users`, { headers });
                 const data = await response.json();
                 setUsers(data);
             } else if (activeTab === 'tables') {
