@@ -161,34 +161,34 @@ const AdminDashboard = () => {
                 return (
                     <form onSubmit={handleSubmitUser(handleSubmit)} className="space-y-4">
                         <div>
-                            <label className="block text-gray-700">Name</label>
+                            <label className="block text-gray-300">Name</label>
                             <input
                                 type="text"
                                 {...registerUser('name', { required: 'Name is required' })}
-                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700">Email</label>
+                            <label className="block text-gray-300">Email</label>
                             <input
                                 type="email"
                                 {...registerUser('email', { required: 'Email is required' })}
-                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700">Password</label>
+                            <label className="block text-gray-300">Password</label>
                             <input
                                 type="password"
                                 {...registerUser('password', { required: !editingItem })}
-                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700">Role</label>
+                            <label className="block text-gray-300">Role</label>
                             <select
                                 {...registerUser('role', { required: 'Role is required' })}
-                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white focus:outline-none focus:border-blue-400"
                             >
                                 <option value="waiter">Waiter</option>
                                 <option value="chef">Chef</option>
@@ -198,7 +198,7 @@ const AdminDashboard = () => {
                         <div className="flex space-x-2">
                             <button
                                 type="submit"
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 w-full"
                             >
                                 {editingItem ? 'Update User' : 'Add User'}
                             </button>
@@ -209,7 +209,7 @@ const AdminDashboard = () => {
                                         resetForm();
                                         setEditingItem(null);
                                     }}
-                                    className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 w-full"
+                                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 w-full"
                                 >
                                     Cancel
                                 </button>
@@ -221,18 +221,18 @@ const AdminDashboard = () => {
                 return (
                     <form onSubmit={handleSubmitTable(handleSubmit)} className="space-y-4">
                         <div>
-                            <label className="block text-gray-700">Table Number</label>
+                            <label className="block text-gray-300">Table Number</label>
                             <input
                                 type="number"
                                 {...registerTable('numero', { required: 'Table number is required' })}
-                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700">Status</label>
+                            <label className="block text-gray-300">Status</label>
                             <select
                                 {...registerTable('estado', { required: 'Status is required' })}
-                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white focus:outline-none focus:border-blue-400"
                             >
                                 <option value="disponible">Available</option>
                                 <option value="ocupada">Occupied</option>
@@ -242,7 +242,7 @@ const AdminDashboard = () => {
                         <div className="flex space-x-2">
                             <button
                                 type="submit"
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 w-full"
                             >
                                 {editingItem ? 'Update Table' : 'Add Table'}
                             </button>
@@ -253,7 +253,7 @@ const AdminDashboard = () => {
                                         resetForm();
                                         setEditingItem(null);
                                     }}
-                                    className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 w-full"
+                                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 w-full"
                                 >
                                     Cancel
                                 </button>
@@ -265,41 +265,41 @@ const AdminDashboard = () => {
                 return (
                     <form onSubmit={handleSubmitProduct(handleSubmit)} className="space-y-4">
                         <div>
-                            <label className="block text-gray-700">Name</label>
+                            <label className="block text-gray-300">Name</label>
                             <input
                                 type="text"
                                 {...registerProduct('name', { required: 'Name is required' })}
-                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700">Description</label>
+                            <label className="block text-gray-300">Description</label>
                             <textarea
                                 {...registerProduct('description')}
-                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700">Price</label>
+                            <label className="block text-gray-300">Price</label>
                             <input
                                 type="number"
                                 step="0.01"
                                 {...registerProduct('price', { required: 'Price is required' })}
-                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700">Category</label>
+                            <label className="block text-gray-300">Category</label>
                             <input
                                 type="text"
                                 {...registerProduct('category')}
-                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                             />
                         </div>
                         <div className="flex space-x-2">
                             <button
                                 type="submit"
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 w-full"
                             >
                                 {editingItem ? 'Update Product' : 'Add Product'}
                             </button>
@@ -310,7 +310,7 @@ const AdminDashboard = () => {
                                         resetForm();
                                         setEditingItem(null);
                                     }}
-                                    className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 w-full"
+                                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 w-full"
                                 >
                                     Cancel
                                 </button>
@@ -328,39 +328,39 @@ const AdminDashboard = () => {
             case 'users':
                 return (
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-gray-700">
+                            <thead className="bg-gray-800/50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Name
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Email
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Role
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-gray-800/30 divide-y divide-gray-700">
                                 {users.map((user) => (
                                     <tr key={user.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">{user.role}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-300">{user.name}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-300">{user.email}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-300">{user.role}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <button
                                                 onClick={() => handleEdit(user)}
-                                                className="text-blue-500 hover:text-blue-700 mr-2"
+                                                className="text-blue-400 hover:text-blue-300 mr-2"
                                             >
                                                 Edit
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(user.id)}
-                                                className="text-red-500 hover:text-red-700"
+                                                className="text-red-400 hover:text-red-300"
                                             >
                                                 Delete
                                             </button>
@@ -374,35 +374,35 @@ const AdminDashboard = () => {
             case 'tables':
                 return (
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-gray-700">
+                            <thead className="bg-gray-800/50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Number
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Status
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-gray-800/30 divide-y divide-gray-700">
                                 {tables.map((table) => (
                                     <tr key={table.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap">{table.numero}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">{table.estado}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-300">{table.numero}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-300">{table.estado}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <button
                                                 onClick={() => handleEdit(table)}
-                                                className="text-blue-500 hover:text-blue-700 mr-2"
+                                                className="text-blue-400 hover:text-blue-300 mr-2"
                                             >
                                                 Edit
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(table.id)}
-                                                className="text-red-500 hover:text-red-700"
+                                                className="text-red-400 hover:text-red-300"
                                             >
                                                 Delete
                                             </button>
@@ -416,43 +416,47 @@ const AdminDashboard = () => {
             case 'products':
                 return (
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-gray-700">
+                            <thead className="bg-gray-800/50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Name
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Description
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Price
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Category
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-gray-800/30 divide-y divide-gray-700">
                                 {products.map((product) => (
                                     <tr key={product.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">{product.description}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">${product.price}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-300">{product.name}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-300">
+                                            {product.description}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-300">${product.price}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-300">
+                                            {product.category}
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <button
                                                 onClick={() => handleEdit(product)}
-                                                className="text-blue-500 hover:text-blue-700 mr-2"
+                                                className="text-blue-400 hover:text-blue-300 mr-2"
                                             >
                                                 Edit
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(product.id)}
-                                                className="text-red-500 hover:text-red-700"
+                                                className="text-red-400 hover:text-red-300"
                                             >
                                                 Delete
                                             </button>
@@ -469,35 +473,36 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <nav className="bg-white shadow-lg">
-                <div className="max-w-7xl mx-auto px-4 py-3">
-                    <div className="flex justify-between items-center">
-                        <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
-                        <div className="flex items-center space-x-4">
-                            <span className="text-gray-600">Welcome, {user?.name}</span>
-                            <button
-                                onClick={logout}
-                                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                            >
-                                Logout
-                            </button>
-                        </div>
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+            {/* Header/Nav */}
+            <nav className="bg-black/30 backdrop-blur-sm fixed w-full z-50">
+                <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-white">
+                        Admin <span className="text-blue-400">Dashboard</span>
+                    </h1>
+                    <div className="flex items-center space-x-4">
+                        <span className="text-gray-300">Welcome, {user?.name}</span>
+                        <button
+                            onClick={logout}
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
+                        >
+                            Logout
+                        </button>
                     </div>
                 </div>
             </nav>
 
-            <div className="max-w-7xl mx-auto py-6 px-4">
+            <main className="container mx-auto px-6 py-32">
                 <div className="mb-6">
-                    <div className="border-b border-gray-200">
+                    <div className="border-b border-gray-700">
                         <nav className="-mb-px flex space-x-8">
                             <button
                                 onClick={() => setActiveTab('users')}
                                 className={`${
                                     activeTab === 'users'
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                                        ? 'border-blue-400 text-blue-400'
+                                        : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
+                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200`}
                             >
                                 Users
                             </button>
@@ -505,9 +510,9 @@ const AdminDashboard = () => {
                                 onClick={() => setActiveTab('tables')}
                                 className={`${
                                     activeTab === 'tables'
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                                        ? 'border-blue-400 text-blue-400'
+                                        : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
+                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200`}
                             >
                                 Tables
                             </button>
@@ -515,9 +520,9 @@ const AdminDashboard = () => {
                                 onClick={() => setActiveTab('products')}
                                 className={`${
                                     activeTab === 'products'
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                                        ? 'border-blue-400 text-blue-400'
+                                        : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
+                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200`}
                             >
                                 Products
                             </button>
@@ -526,20 +531,45 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow">
-                        <h2 className="text-xl font-semibold mb-4">
+                    <div className="lg:col-span-1 bg-black/30 backdrop-blur-sm p-6 rounded-lg shadow-xl">
+                        <h2 className="text-xl font-semibold mb-4 text-white">
                             {editingItem ? `Edit ${activeTab.slice(0, -1)}` : `Add New ${activeTab.slice(0, -1)}`}
                         </h2>
-                        {renderForm()}
+                        <div className="text-gray-300">{renderForm()}</div>
                     </div>
-                    <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow">
-                        <h2 className="text-xl font-semibold mb-4">
+                    <div className="lg:col-span-2 bg-black/30 backdrop-blur-sm p-6 rounded-lg shadow-xl">
+                        <h2 className="text-xl font-semibold mb-4 text-white">
                             {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} List
                         </h2>
                         {renderList()}
                     </div>
                 </div>
-            </div>
+            </main>
+
+            {/* Footer */}
+            <footer className="bg-black/30 backdrop-blur-sm py-12">
+                <div className="container mx-auto px-6">
+                    <div className="flex flex-col items-center">
+                        <span className="text-2xl font-bold text-white mb-8">
+                            Admin <span className="text-blue-400">Dashboard</span>
+                        </span>
+                        <p className="text-gray-400 text-center max-w-md mb-8">
+                            Manage your restaurant efficiently with this modern platform.
+                        </p>
+                        <div className="flex space-x-6">
+                            <span className="text-gray-400 hover:text-blue-400 cursor-pointer transition-colors">
+                                Contact
+                            </span>
+                            <span className="text-gray-400 hover:text-blue-400 cursor-pointer transition-colors">
+                                Support
+                            </span>
+                            <span className="text-gray-400 hover:text-blue-400 cursor-pointer transition-colors">
+                                Privacy
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 };
