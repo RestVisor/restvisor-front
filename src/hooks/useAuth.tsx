@@ -1,138 +1,198 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: 'admin' | 'chef' | 'waiter';
-}
+import { authService } from '../services/authService';
+import { AuthStateSchema, User } from '../types/auth';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string, role: string) => Promise<void>;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
-const API_URL = import.meta.env.VITE_API_URL;
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [authState, setAuthState] = useState<{
+    user: User | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+  }>({
+    user: null,
+    isAuthenticated: false,
+    isLoading: true,
+  });
+
   const navigate = useNavigate();
 
+  // Initialize auth state on component mount
   useEffect(() => {
-    // Check for stored token and user data
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
-    }
+    const initializeAuth = async () => {
+      try {
+        // First check if we have a token
+        const token = authService.getToken();
+        if (!token) {
+          console.log('No token found, clearing auth state');
+          authService.clearAuthState();
+          setAuthState({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+          return;
+        }
+
+        // Try to get stored auth state
+        const storedAuth = authService.getAuthState();
+        if (storedAuth && storedAuth.user) {
+          console.log('Found stored auth state, validating token');
+          // Validate token and user data
+          const isValid = await authService.validateToken();
+          if (isValid) {
+            console.log('Token validated successfully');
+            setAuthState({
+              user: storedAuth.user,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            return;
+          }
+        }
+        
+        // If we get here, either there was no stored auth state or token validation failed
+        console.log('No valid auth state found, clearing auth state');
+        authService.clearAuthState();
+        setAuthState({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+        });
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        authService.clearAuthState();
+        setAuthState({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+        });
+      }
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(`${API_URL}/usuarios/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      setAuthState(prev => ({ ...prev, isLoading: true }));
+      const response = await authService.login(email, password);
+      
+      // Validate the complete auth state with Zod
+      const result = AuthStateSchema.safeParse({
+        user: response.user,
+        isAuthenticated: true,
+        isLoading: false,
       });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
+      
+      if (!result.success) {
+        throw new Error('Invalid auth state format');
       }
-
-      const data = await response.json();
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setUser(data.user);
-      setIsAuthenticated(true);
-
-      // Redirect based on user role
-      switch (data.user.role) {
+      
+      setAuthState(result.data);
+      
+      // Redirect based on role
+      switch (response.user.role) {
         case 'admin':
           navigate('/admin');
           break;
         case 'chef':
-          navigate('/chef');
+          navigate('/kitchen');
           break;
         case 'waiter':
           navigate('/waiter');
           break;
         default:
-          navigate('/login');
+          navigate('/');
       }
     } catch (error) {
       console.error('Login error:', error);
       throw error;
+    } finally {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
   const register = async (name: string, email: string, password: string, role: string) => {
     try {
-      const response = await fetch(`${API_URL}/usuarios/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password, role }),
+      setAuthState(prev => ({ ...prev, isLoading: true }));
+      const response = await authService.register(name, email, password, role);
+      
+      // Validate the complete auth state with Zod
+      const result = AuthStateSchema.safeParse({
+        user: response.user,
+        isAuthenticated: true,
+        isLoading: false,
       });
-
-      if (!response.ok) {
-        throw new Error('Registration failed');
+      
+      if (!result.success) {
+        throw new Error('Invalid auth state format');
       }
-
-      const data = await response.json();
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setUser(data.user);
-      setIsAuthenticated(true);
-
-      // Redirect based on user role
-      switch (data.user.role) {
+      
+      setAuthState(result.data);
+      
+      // Redirect based on role
+      switch (response.user.role) {
         case 'admin':
           navigate('/admin');
           break;
         case 'chef':
-          navigate('/chef');
+          navigate('/kitchen');
           break;
         case 'waiter':
           navigate('/waiter');
           break;
         default:
-          navigate('/login');
+          navigate('/');
       }
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
+    } finally {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    setIsAuthenticated(false);
-    navigate('/login');
+    authService.logout();
+    setAuthState({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+    });
+    navigate('/');
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user: authState.user,
+        isAuthenticated: authState.isAuthenticated,
+        isLoading: authState.isLoading,
+        login,
+        register,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}
