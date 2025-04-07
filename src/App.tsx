@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './hooks/useAuth';
 import { TablesAndMenuProvider } from './hooks/useTablesAndMenu';
 import { LoginForm } from './components/LoginForm';
-import { RegisterForm } from './components/RegisterForm';
 import AdminDashboard from './pages/AdminDashboard';
 import ChefDashboard from './pages/ChefDashboard';
 import WaiterDashboard from './pages/WaiterDashboard';
@@ -10,48 +9,54 @@ import LandingPage from './pages/LandingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
-  return (
-    <Router>
-      <AuthProvider>
-        <TablesAndMenuProvider>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginForm />} />
-            <Route path="/register" element={<RegisterForm />} />
-            {/* Protected routes */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/chef"
-              element={
-                <ProtectedRoute allowedRoles={['chef']}>
-                  <ChefDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/waiter"
-              element={
-                <ProtectedRoute allowedRoles={['waiter']}>
-                  <WaiterDashboard />
-                </ProtectedRoute>
-              }
-            />
+    return (
+        <Router>
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+                <AuthProvider>
+                    <Routes>
+                        {/* Public routes */}
+                        <Route path="/" element={<LandingPage />} />
+                        <Route path="/login" element={<LoginForm />} />
 
-          {/* Catch all route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </TablesAndMenuProvider>
-      </AuthProvider>
-    </Router>
-  );
+                        {/* Protected routes - wrapped in TablesAndMenuProvider */}
+                        <Route
+                            path="/admin"
+                            element={
+                                <ProtectedRoute allowedRoles={['admin']}>
+                                    <TablesAndMenuProvider>
+                                        <AdminDashboard />
+                                    </TablesAndMenuProvider>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/chef"
+                            element={
+                                <ProtectedRoute allowedRoles={['chef']}>
+                                    <TablesAndMenuProvider>
+                                        <ChefDashboard />
+                                    </TablesAndMenuProvider>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/waiter"
+                            element={
+                                <ProtectedRoute allowedRoles={['waiter']}>
+                                    <TablesAndMenuProvider>
+                                        <WaiterDashboard />
+                                    </TablesAndMenuProvider>
+                                </ProtectedRoute>
+                            }
+                        />
+
+                        {/* Catch all route */}
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </AuthProvider>
+            </div>
+        </Router>
+    );
 }
 
 export default App;
