@@ -24,6 +24,7 @@ interface Product {
     description: string;
     price: number;
     category: string;
+    stock: number;
 }
 
 type TabType = 'users' | 'tables' | 'products';
@@ -296,6 +297,16 @@ const AdminDashboard = () => {
                                 className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                             />
                         </div>
+                        <div>
+                            <label className="block text-gray-300">Stock</label>
+                            <input
+                               type="number"
+                                {...registerProduct("stock", {
+                                    required: "Stock is required",
+                              })}
+                                className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                             />
+                       </div>
                         <div className="flex space-x-2">
                             <button
                                 type="submit"
