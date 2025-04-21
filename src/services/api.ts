@@ -43,17 +43,22 @@ export const getMenuItemsAPI = async () => {
 };
 
 export const submitOrderAPI = async (order: Order) => {
-    const token = authService.getToken();
+    const token = localStorage.getItem('token');
     if (!token) {
         throw new Error('No token found, please log in');
     }
 
     try {
-        const response = await axios.post(`${API_URL}/orders`, order, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const response = await axios.post(
+            `${API_URL}/orders`, 
+            order,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
         return response.data;
     } catch (error) {
         console.error('Error submitting order:', error);
@@ -62,7 +67,7 @@ export const submitOrderAPI = async (order: Order) => {
 };
 
 export const submitDetailOrderAPI = async (orderId: number, detail: OrderDetail) => {
-    const token = authService.getToken();
+    const token = localStorage.getItem('token');
     if (!token) {
         throw new Error('No token found, please log in');
     }
@@ -76,13 +81,37 @@ export const submitDetailOrderAPI = async (orderId: number, detail: OrderDetail)
             },
             {
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            },
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
         );
         return response.data;
     } catch (error) {
         console.error('Error submitting order detail:', error);
         return null;
+    }
+};
+
+export const updateTableState = async (tableId: number, estado: string) => {
+    const token = authService.getToken();
+    if (!token) {
+        throw new Error('No token found, please log in');
+    }
+
+    try {
+        const response = await axios.post(
+            `${API_URL}/tables/${tableId}/estado`,
+            { estado },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error updating table state:', error);
+        throw error;
     }
 };

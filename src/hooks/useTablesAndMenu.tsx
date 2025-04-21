@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { Table, Product, Order } from '../types';
-import { getTablesAPI, getMenuItemsAPI, submitOrderAPI, submitDetailOrderAPI } from '../services/api';
+import { getTablesAPI, getMenuItemsAPI, submitOrderAPI, submitDetailOrderAPI, updateTableState } from '../services/api';
 
 interface TablesAndMenuContextType {
   tables: Table[];
@@ -84,6 +84,12 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
           })
         );
 
+        // Actualizar el estado de la mesa a ocupada
+        await updateTableState(order.tableNumber, 'ocupada');
+        
+        // Actualizar la lista de mesas para refrescar la vista
+        await getTables();
+
         // Mover el pedido de pendingOrders a activeOrders
         setActiveOrders((prevOrders) => [...prevOrders, order]);
         setPendingOrders((prevOrders) =>
@@ -92,6 +98,7 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
       }
     } catch (error) {
       console.error('Error submitting order:', error);
+      throw error;
     }
   };
 
