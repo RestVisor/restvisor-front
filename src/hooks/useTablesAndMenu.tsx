@@ -84,11 +84,15 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
           })
         );
 
-        // Actualizar el estado de la mesa a ocupada
-        await updateTableState(order.tableNumber, 'ocupada');
-        
-        // Actualizar la lista de mesas para refrescar la vista
-        await getTables();
+        // Encontrar el id de la mesa basado en su número
+        const table = tables.find(t => t.numero === order.tableNumber);
+        if (table) {
+          // Actualizar el estado de la mesa a ocupada
+          await updateTableState(table.id, 'ocupada');
+          
+          // Actualizar la lista de mesas para refrescar la vista
+          await getTables();
+        }
 
         // Mover el pedido de pendingOrders a activeOrders
         setActiveOrders((prevOrders) => [...prevOrders, order]);
