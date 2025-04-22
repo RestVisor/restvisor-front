@@ -57,6 +57,7 @@ const AdminDashboard = () => {
         handleSubmit: handleSubmitProduct,
         reset: resetProduct,
         setValue: setProductValue,
+        formState: { errors },
     } = useForm<Product>();
 
     useEffect(() => {
@@ -303,9 +304,11 @@ const AdminDashboard = () => {
                                type="number"
                                 {...registerProduct("stock", {
                                     required: "Stock is required",
+                                    min: { value: 0, message: "Stock cannot be negative" },
                               })}
                                 className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                              />
+                              {errors.stock && <p className="text-red-500 text-sm">{errors.stock.message}</p>}
                        </div>
                         <div className="flex space-x-2">
                             <button
@@ -443,6 +446,9 @@ const AdminDashboard = () => {
                                         Category
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Stock
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
@@ -457,6 +463,9 @@ const AdminDashboard = () => {
                                         <td className="px-6 py-4 whitespace-nowrap text-gray-300">${product.price}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-gray-300">
                                             {product.category}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-300">
+                                            {product.stock === 0 ? "No disponible" : product.stock}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <button
