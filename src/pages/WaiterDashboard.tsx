@@ -16,7 +16,7 @@ const WaiterDashboard = () => {
   const [currentOrder, setCurrentOrder] = useState<Order>({
     id: Date.now(),
     tableNumber: 0,
-    created_at: new Date().toDateString(),
+    created_at: new Date().toString(),
     status: '',
     orderDetails: [],
   });
@@ -48,7 +48,7 @@ const WaiterDashboard = () => {
           id: Date.now(),
           tableNumber: table.numero,
           status: 'pending',
-          created_at: new Date().toDateString(),
+          created_at: new Date().toString(),
           orderDetails: [],
         };
         setCurrentOrder(newOrder); // Actualizamos el estado de currentOrder
@@ -107,7 +107,7 @@ const WaiterDashboard = () => {
     setCurrentOrder({
       id: Date.now(),
       tableNumber: 0,
-      created_at: new Date().toDateString(),
+      created_at: new Date().toString(),
       status: '',
       orderDetails: [],
     });
