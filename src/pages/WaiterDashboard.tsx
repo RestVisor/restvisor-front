@@ -6,6 +6,9 @@ import { useAuth } from '../hooks/useAuth';
 import TableManagement from '../components/waiter/TableManagement';  // Importar el componente TableManagement
 import MenuSection from '../components/waiter/MenuSection';  // Importar el componente MenuSection
 import OrderStatus from '../components/waiter/OrderStatus';  // Importar el componente OrderStatus
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const WaiterDashboard = () => {
   const { user, logout } = useAuth();
@@ -19,6 +22,7 @@ const WaiterDashboard = () => {
     created_at: new Date().toString(),
     status: '',
     orderDetails: [],
+    active: true,
   });
 
   // Estado de la mesa seleccionada
@@ -50,6 +54,7 @@ const WaiterDashboard = () => {
           status: 'pending',
           created_at: new Date().toString(),
           orderDetails: [],
+          active: true,
         };
         setCurrentOrder(newOrder); // Actualizamos el estado de currentOrder
         addOrder(newOrder); // Llamamos a addOrder con el nuevo pedido
@@ -110,6 +115,7 @@ const WaiterDashboard = () => {
       created_at: new Date().toString(),
       status: '',
       orderDetails: [],
+      active: true,
     });
     setSelectedTable(null);
   };
@@ -120,6 +126,55 @@ const WaiterDashboard = () => {
       const item = menuItems.find(item => item.id === orderDetail.producto_id);
       return item ? total + item.price * orderDetail.cantidad : total;
     }, 0).toFixed(2);
+  };
+
+  // Función para pagar el pedido
+  const handlePayOrder = async () => {
+    if (!selectedTable) {
+      alert('Por favor selecciona una mesa primero!');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No se encontró el token, por favor inicia sesión');
+      }
+
+      const response = await axios.post(
+        `${API_URL}/orders/desactivar`,
+        {
+          numero_mesa: selectedTable.numero
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        // Limpiar el pedido actual
+        setCurrentOrder({
+          id: Date.now(),
+          tableNumber: 0,
+          created_at: new Date().toString(),
+          status: '',
+          orderDetails: [],
+          active: true,
+        });
+        setSelectedTable(null);
+        
+        // Actualizar el estado de las mesas
+        await getTables();
+        
+        alert('Pedido pagado exitosamente!');
+      }
+    } catch (error) {
+      console.error('Error al pagar el pedido:', error);
+      alert('Error al pagar el pedido. Por favor intenta de nuevo.');
+    }
   };
 
   return (
@@ -155,6 +210,7 @@ const WaiterDashboard = () => {
             handleRemoveItem={handleRemoveItem}
             calculateTotal={calculateTotal}
             handleSubmitOrder={handleSubmitOrder}
+            handlePayOrder={handlePayOrder}
             menuItems={menuItems}
           />
         </div>
