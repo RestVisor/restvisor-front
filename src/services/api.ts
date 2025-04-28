@@ -118,3 +118,55 @@ export const updateTableState = async (tableId: number, estado: string) => {
         throw error;
     }
 };
+
+export const getActiveOrdersByTable = async (tableNumber: number) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        throw new Error('No token found, please log in');
+    }
+
+    try {
+        console.log('Fetching active orders for table:', tableNumber);
+        const response = await axios.get(
+            `${API_URL}/orders/mesa/${tableNumber}/activos`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        console.log('Response from backend:', response.data);
+
+        // La respuesta ya viene en el formato correcto, solo necesitamos mapear los detalles
+        if (response.data && response.data.order_details) {
+            return {
+                id: response.data.id,
+                tableNumber: response.data.tableNumber,
+                status: response.data.status,
+                created_at: response.data.created_at,
+                active: response.data.active,
+                orderDetails: response.data.order_details.map((detail: any) => ({
+                    id: detail.producto_id,
+                    cantidad: detail.cantidad,
+                    producto_id: detail.producto_id,
+                    pedido_id: response.data.id,
+                    product: {
+                        id: detail.products.id,
+                        name: detail.products.name,
+                        description: detail.products.description,
+                        price: detail.products.price,
+                        category: detail.products.category,
+                        stock: detail.products.stock
+                    }
+                }))
+            };
+        } else {
+            console.warn('Unexpected response structure:', response.data);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching active orders by table:', error);
+        return null;
+    }
+};
