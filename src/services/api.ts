@@ -50,8 +50,11 @@ export const submitOrderAPI = async (order: Order) => {
 
     try {
         const response = await axios.post(
-            `${API_URL}/orders`, 
-            order,
+            `${API_URL}/orders`,
+            {
+                ...order,
+                active: true
+            },
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,

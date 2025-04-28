@@ -24,6 +24,7 @@ export interface Order {
   created_at: string;
   status: string;
   orderDetails: OrderDetail[];
+  active: boolean;
 }
 
 export interface Product {
