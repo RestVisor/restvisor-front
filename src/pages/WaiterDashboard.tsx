@@ -165,6 +165,10 @@ const WaiterDashboard = () => {
           active: true,
         });
         setSelectedTable(null);
+        
+        // Actualizar el estado de las mesas
+        await getTables();
+        
         alert('Pedido pagado exitosamente!');
       }
     } catch (error) {
