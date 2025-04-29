@@ -79,20 +79,12 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
               Total: ${calculateTotal()}
             </div>
 
-            <div className="flex space-x-4 mt-4">
-              <button
-                onClick={handleSubmitOrder}
-                className="bg-blue-600 text-white p-2 rounded transition-all duration-200 transform hover:scale-105 flex-1"
-              >
-                Submit Order
-              </button>
-              <button
-                onClick={handlePayOrder}
-                className="bg-green-600 text-white p-2 rounded transition-all duration-200 transform hover:scale-105 flex-1"
-              >
-                Pay
-              </button>
-            </div>
+            <button
+              onClick={handleSubmitOrder}
+              className="bg-blue-600 text-white p-2 rounded transition-all duration-200 transform hover:scale-105 w-full mt-4"
+            >
+              Submit Order
+            </button>
           </div>
 
           {tableTotalOrder && tableTotalOrder.orderDetails && tableTotalOrder.orderDetails.length > 0 && (
@@ -117,6 +109,12 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
                   return sum + (item ? item.price * detail.cantidad : 0);
                 }, 0).toFixed(2)}
               </div>
+              <button
+                onClick={handlePayOrder}
+                className="bg-green-600 text-white p-2 rounded transition-all duration-200 transform hover:scale-105 w-full mt-4"
+              >
+                Pay
+              </button>
             </div>
           )}
         </div>
