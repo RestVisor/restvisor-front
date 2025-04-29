@@ -81,7 +81,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
 
             <button
               onClick={handleSubmitOrder}
-              className="bg-blue-600 text-white p-2 rounded transition-all duration-200 transform hover:scale-105 w-full mt-4"
+              disabled={currentOrder.orderDetails.length === 0}
+              className={`bg-blue-600 text-white p-2 rounded transition-all duration-200 transform hover:scale-105 w-full mt-4 ${currentOrder.orderDetails.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               Submit Order
             </button>
