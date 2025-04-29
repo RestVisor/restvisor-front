@@ -7,6 +7,7 @@ interface OrderStatusProps {
   handleRemoveItem: (orderDetail: OrderDetail) => void;
   calculateTotal: () => string;
   handleSubmitOrder: () => void;
+  handlePayOrder: () => Promise<void>;
   menuItems: { id: number; name: string; price: number }[]; // Definir el tipo de menuItems
 }
 
@@ -16,14 +17,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
   handleRemoveItem,
   calculateTotal,
   handleSubmitOrder,
+  handlePayOrder,
   menuItems,
 }) => {
   return (
     <div className="bg-gray-800/50 backdrop-blur-sm p-8 rounded-2xl border border-gray-700 hover:border-blue-500/50 transition-all duration-300">
-      <h2 className="text-xl font-semibold text-white mb-4">Order Status</h2>
+      <h2 className="text-xl font-semibold text-white mb-4">Estado del Pedido</h2>
       {selectedTable ? (
         <div>
-          <h3 className="text-lg text-white">Table {selectedTable.numero} - Order</h3>
+          <h3 className="text-lg text-white">Mesa {selectedTable.numero} - Pedido</h3>
           <ul>
             {currentOrder.orderDetails.map((orderDetail) => (
               <li key={orderDetail.id} className="flex justify-between items-center text-white">
@@ -35,7 +37,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
                   onClick={() => handleRemoveItem(orderDetail)}
                   className="text-red-500 hover:text-red-600"
                 >
-                  Remove
+                  Eliminar
                 </button>
               </li>
             ))}
@@ -46,15 +48,23 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
             Total: ${calculateTotal()}
           </div>
 
-          <button
-            onClick={handleSubmitOrder}
-            className="bg-blue-600 text-white p-2 rounded mt-4 transition-all duration-200 transform hover:scale-105"
-          >
-            Submit Order
-          </button>
+          <div className="flex space-x-4 mt-4">
+            <button
+              onClick={handleSubmitOrder}
+              className="bg-blue-600 text-white p-2 rounded transition-all duration-200 transform hover:scale-105 flex-1"
+            >
+              Enviar Pedido
+            </button>
+            <button
+              onClick={handlePayOrder}
+              className="bg-green-600 text-white p-2 rounded transition-all duration-200 transform hover:scale-105 flex-1"
+            >
+              Pagar
+            </button>
+          </div>
         </div>
       ) : (
-        <p className="text-gray-500">Select a table to start an order</p>
+        <p className="text-gray-500">Selecciona una mesa para comenzar un pedido</p>
       )}
     </div>
   );
