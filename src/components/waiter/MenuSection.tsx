@@ -114,6 +114,9 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
                     {productsStock[item.id] === 0 && (
                       <p className="text-red-300 text-sm mt-2">Agotado</p>
                     )}
+                    {productsStock[item.id] > 0 && productsStock[item.id] < 10 && (
+                      <p className="text-red-300 text-sm mt-2">Quedan {productsStock[item.id]} unidades</p>
+                    )}
                   </div>
                 ))}
               </div>
