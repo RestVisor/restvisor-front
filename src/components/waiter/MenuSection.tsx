@@ -30,25 +30,35 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
 
   useEffect(() => {
     const fetchStock = async () => {
-      const stockPromises = menuItems.map(async (product) => {
-        const stock = await getProductStock(product.id);
-        return { id: product.id, stock };
-      });
+      try {
+        const stockPromises = menuItems.map(async (product) => {
+          const stock = await getProductStock(product.id);
+          return { id: product.id, stock };
+        });
 
-      const stockResults = await Promise.all(stockPromises);
-      const newStockState = stockResults.reduce((acc, { id, stock }) => {
-        acc[id] = stock;
-        return acc;
-      }, {} as Record<number, number>);
+        const stockResults = await Promise.all(stockPromises);
+        const newStockState = stockResults.reduce((acc, { id, stock }) => {
+          acc[id] = stock;
+          return acc;
+        }, {} as Record<number, number>);
 
-      setProductsStock(newStockState);
+        setProductsStock(newStockState);
+      } catch (error) {
+        console.error('Error al cargar el stock:', error);
+        // En caso de error, inicializar con stock por defecto
+        const defaultStock = menuItems.reduce((acc, product) => {
+          acc[product.id] = 1;
+          return acc;
+        }, {} as Record<number, number>);
+        setProductsStock(defaultStock);
+      }
     };
 
-    // Realizar la primera verificación
+    // Realizar la primera verificación inmediatamente
     fetchStock();
 
-    // Configurar el intervalo para verificar cada minuto
-    const intervalId = setInterval(fetchStock, 60000);
+    // Configurar el intervalo para verificar cada 6 segundos
+    const intervalId = setInterval(fetchStock, 5000);
 
     // Limpiar el intervalo al desmontar el componente
     return () => clearInterval(intervalId);
