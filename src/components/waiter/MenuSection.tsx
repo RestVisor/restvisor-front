@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product } from '../../types';
+import { getProductStock } from '../../services/productService';
 
 interface MenuSectionProps {
   menuItems: Product[];
@@ -25,11 +26,45 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
     }, {} as Record<string, boolean>)
   );
 
+  const [productsStock, setProductsStock] = useState<Record<number, number>>({});
+
+  useEffect(() => {
+    const fetchStock = async () => {
+      const stockPromises = menuItems.map(async (product) => {
+        const stock = await getProductStock(product.id);
+        return { id: product.id, stock };
+      });
+
+      const stockResults = await Promise.all(stockPromises);
+      const newStockState = stockResults.reduce((acc, { id, stock }) => {
+        acc[id] = stock;
+        return acc;
+      }, {} as Record<number, number>);
+
+      setProductsStock(newStockState);
+    };
+
+    // Realizar la primera verificación
+    fetchStock();
+
+    // Configurar el intervalo para verificar cada minuto
+    const intervalId = setInterval(fetchStock, 60000);
+
+    // Limpiar el intervalo al desmontar el componente
+    return () => clearInterval(intervalId);
+  }, [menuItems]);
+
   const toggleCategory = (category: string) => {
     setExpandedCategories(prev => ({
       ...prev,
       [category]: !prev[category]
     }));
+  };
+
+  const handleItemClick = (product: Product) => {
+    if (productsStock[product.id] > 0) {
+      handleAddMenuItem(product);
+    }
   };
 
   return (
@@ -48,22 +83,27 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
               </span>
             </button>
             <div
-              className={`transition-all duration-500 ease-in-out origin-top ${
-                expandedCategories[category]
-                  ? 'opacity-100 max-h-[2000px] scale-y-100'
-                  : 'opacity-0 max-h-0 scale-y-95'
-              }`}
+              className={`transition-all duration-500 ease-in-out origin-top ${expandedCategories[category]
+                ? 'opacity-100 max-h-[2000px] scale-y-100'
+                : 'opacity-0 max-h-0 scale-y-95'
+                }`}
             >
               <div className="p-4 grid grid-cols-2 gap-4">
                 {products.map((item) => (
                   <div
                     key={item.id}
-                    className="p-4 rounded-lg cursor-pointer bg-gray-600/50 hover:bg-gray-500/50 transition-all duration-300 transform hover:scale-102 hover:shadow-lg"
-                    onClick={() => handleAddMenuItem(item)}
+                    className={`p-4 rounded-lg transition-all duration-300 transform hover:scale-102 hover:shadow-lg ${productsStock[item.id] === 0
+                      ? 'cursor-not-allowed bg-red-900/50'
+                      : 'cursor-pointer bg-gray-600/50 hover:bg-gray-500/50'
+                      }`}
+                    onClick={() => handleItemClick(item)}
                   >
                     <h3 className="text-lg text-white">{item.name}</h3>
                     <p className="text-gray-300">{item.description}</p>
                     <p className="text-lg font-bold text-white mt-2">${item.price.toFixed(2)}</p>
+                    {productsStock[item.id] === 0 && (
+                      <p className="text-red-300 text-sm mt-2">Agotado</p>
+                    )}
                   </div>
                 ))}
               </div>
