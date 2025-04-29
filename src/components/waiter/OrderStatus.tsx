@@ -53,11 +53,11 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
 
   return (
     <div className="bg-gray-800/50 backdrop-blur-sm p-8 rounded-2xl border border-gray-700 hover:border-blue-500/50 transition-all duration-300">
-      <h2 className="text-xl font-semibold text-white mb-4">Estado del Pedido</h2>
+      <h2 className="text-xl font-semibold text-white mb-4">Order Status</h2>
       {selectedTable ? (
         <div>
           <div className="mb-8">
-            <h3 className="text-lg text-white">Mesa {selectedTable.numero} - Pedido</h3>
+            <h3 className="text-lg text-white">Table {selectedTable.numero} - Current Order</h3>
             <ul>
               {currentOrder.orderDetails.map((orderDetail) => (
                 <li key={orderDetail.id} className="flex justify-between items-center text-white">
@@ -69,7 +69,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
                     onClick={() => handleRemoveItem(orderDetail)}
                     className="text-red-500 hover:text-red-600"
                   >
-                    Eliminar
+                    Remove
                   </button>
                 </li>
               ))}
@@ -84,20 +84,20 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
                 onClick={handleSubmitOrder}
                 className="bg-blue-600 text-white p-2 rounded transition-all duration-200 transform hover:scale-105 flex-1"
               >
-                Enviar Pedido
+                Submit Order
               </button>
               <button
                 onClick={handlePayOrder}
                 className="bg-green-600 text-white p-2 rounded transition-all duration-200 transform hover:scale-105 flex-1"
               >
-                Pagar
+                Pay
               </button>
             </div>
           </div>
 
           {tableTotalOrder && tableTotalOrder.orderDetails && tableTotalOrder.orderDetails.length > 0 && (
             <div className="mt-8 border-t border-gray-700 pt-4">
-              <h3 className="text-lg text-white mb-4">Total de la Mesa</h3>
+              <h3 className="text-lg text-white mb-4">Table Total</h3>
               <ul>
                 {tableTotalOrder.orderDetails.map((detail: OrderDetail) => (
                   <li key={detail.id} className="flex justify-between items-center text-gray-400">
@@ -121,7 +121,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
           )}
         </div>
       ) : (
-        <p className="text-gray-500">Selecciona una mesa para comenzar un pedido</p>
+        <p className="text-gray-500">Select a table to start an order</p>
       )}
     </div>
   );
