@@ -6,6 +6,7 @@ import TableManagement from '../components/waiter/TableManagement';
 import MenuSection from '../components/waiter/MenuSection';
 import OrderStatus from '../components/waiter/OrderStatus';
 import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -102,6 +103,16 @@ const WaiterDashboard = () => {
         }
         addOrder(currentOrder);
         submitOrder(currentOrder);
+        toast.success(`¡Pedido enviado correctamente para la Mesa ${selectedTable.numero}!`, {
+            duration: 3000,
+            position: 'top-center',
+            icon: '🍽️',
+            style: {
+                borderRadius: '10px',
+                background: '#333',
+                color: '#fff',
+            },
+        });
         setCurrentOrder({
             id: Date.now(),
             tableNumber: 0,
@@ -164,16 +175,31 @@ const WaiterDashboard = () => {
                 // Actualizar el estado de las mesas
                 await getTables();
 
-                alert('¡Pedido pagado exitosamente!');
+                toast.success('¡Pedido pagado exitosamente!', {
+                    duration: 3000,
+                    position: 'top-center',
+                    icon: '💰',
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    },
+                });
             }
         } catch (error) {
             console.error('Error al pagar el pedido:', error);
-            alert('Error al pagar el pedido. Por favor intenta de nuevo.');
+            toast.error('Error al pagar el pedido. Por favor intenta de nuevo.', {
+                duration: 3000,
+                position: 'top-center',
+            });
         }
     };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+            {/* Toaster para mostrar notificaciones */}
+            <Toaster />
+
             {/* Header/Nav */}
             <nav className="bg-black/30 backdrop-blur-sm fixed w-full z-50">
                 <div className="container mx-auto px-6 py-4 flex justify-between items-center">
