@@ -4,7 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import OrderCard from '../components/chef/OrderCard';
 import OrderFilters from '../components/chef/OrderFilters';
 import StatCards from '../components/chef/StatCards';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -36,6 +36,84 @@ const ChefDashboard = () => {
     // Add state for products data
     const [products, setProducts] = useState<Product[]>([]);
     const [loadingProducts, setLoadingProducts] = useState(true);
+    const [autoRefresh, setAutoRefresh] = useState(true);
+    const refreshIntervalRef = useRef<number | null>(null);
+    const prevOrdersCountRef = useRef<number>(0);
+    const initialLoadCompleteRef = useRef<boolean>(false);
+
+    // Play notification when new orders arrive
+    useEffect(() => {
+        // Skip the first render and only check for new orders after initial load
+        if (initialLoadCompleteRef.current && orders.length > prevOrdersCountRef.current) {
+            try {
+                // Check if there are actually new orders (not just filtered differently)
+                const newOrdersCount = orders.length - prevOrdersCountRef.current;
+
+                if (newOrdersCount > 0) {
+                    // Show notification toast
+                    toast.success(
+                        `${newOrdersCount} ${newOrdersCount === 1 ? 'nuevo pedido' : 'nuevos pedidos'} recibido${
+                            newOrdersCount === 1 ? '' : 's'
+                        }`,
+                        {
+                            icon: '🔔',
+                            duration: 5000,
+                            style: {
+                                borderRadius: '10px',
+                                background: '#333',
+                                color: '#fff',
+                            },
+                        },
+                    );
+                }
+            } catch (error) {
+                console.error('Error with notification:', error);
+            }
+        }
+
+        // After initial load, start tracking order count changes
+        if (!initialLoadCompleteRef.current && !loading) {
+            initialLoadCompleteRef.current = true;
+        }
+
+        // Update the previous orders count reference
+        prevOrdersCountRef.current = orders.length;
+    }, [orders, loading]);
+
+    // Custom refresh function to prevent UI flashing
+    const smoothRefreshOrders = useCallback(async () => {
+        // Only call API refresh if not already loading
+        if (!loading) {
+            await refreshOrders();
+        }
+    }, [refreshOrders, loading]);
+
+    // Set up auto-refresh interval for orders
+    useEffect(() => {
+        if (autoRefresh) {
+            // Start refreshing orders every second
+            refreshIntervalRef.current = window.setInterval(() => {
+                smoothRefreshOrders();
+            }, 1000);
+        } else if (refreshIntervalRef.current) {
+            // Clear the interval if auto-refresh is disabled
+            clearInterval(refreshIntervalRef.current);
+            refreshIntervalRef.current = null;
+        }
+
+        // Clean up interval when component unmounts
+        return () => {
+            if (refreshIntervalRef.current) {
+                clearInterval(refreshIntervalRef.current);
+                refreshIntervalRef.current = null;
+            }
+        };
+    }, [autoRefresh, smoothRefreshOrders]);
+
+    // Toggle auto-refresh
+    const toggleAutoRefresh = () => {
+        setAutoRefresh((prev) => !prev);
+    };
 
     // Fetch products data
     useEffect(() => {
@@ -57,7 +135,14 @@ const ChefDashboard = () => {
                 setProducts(data);
             } catch (error) {
                 console.error('Error fetching products:', error);
-                toast.error('Error loading inventory data');
+                toast.error('Error loading inventory data', {
+                    duration: 5000,
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    },
+                });
             } finally {
                 setLoadingProducts(false);
             }
@@ -106,11 +191,25 @@ const ChefDashboard = () => {
             if (updatedResponse.ok) {
                 const updatedData = await updatedResponse.json();
                 setProducts(updatedData);
-                toast.success(`Inventory updated for ${product.name}`);
+                toast.success(`Inventory updated for ${product.name}`, {
+                    duration: 5000,
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    },
+                });
             }
         } catch (error) {
             console.error('Error requesting restocking:', error);
-            toast.error('Failed to request restocking');
+            toast.error('Failed to request restocking', {
+                duration: 5000,
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                },
+            });
         }
     };
 
@@ -118,16 +217,40 @@ const ChefDashboard = () => {
         try {
             // Request restocking for all low-stock products
             await Promise.all(lowStockProducts.map((product) => requestRestocking(product.id)));
-            toast.success('Restocking requested for all low stock items');
+            toast.success('Restocking requested for all low stock items', {
+                duration: 5000,
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                },
+            });
         } catch (error) {
             console.error('Error requesting multiple restocking:', error);
-            toast.error('Failed to request restocking for some items');
+            toast.error('Failed to request restocking for some items', {
+                duration: 5000,
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                },
+            });
         }
     };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-            <Toaster position="top-right" />
+            <Toaster
+                position="top-right"
+                toastOptions={{
+                    duration: 5000, // Default duration for all toasts
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    },
+                }}
+            />
 
             {/* Header/Nav */}
             <nav className="bg-black/30 backdrop-blur-sm fixed w-full z-50">
@@ -158,25 +281,70 @@ const ChefDashboard = () => {
                         <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 shadow-xl">
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-xl font-semibold text-white">Pedidos</h2>
-                                <button
-                                    onClick={refreshOrders}
-                                    className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-lg transition-all duration-200"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-5 w-5"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={toggleAutoRefresh}
+                                        className={`${
+                                            autoRefresh
+                                                ? 'bg-green-600 hover:bg-green-700'
+                                                : 'bg-gray-700 hover:bg-gray-600'
+                                        } text-white p-2 rounded-lg transition-all duration-200 flex items-center`}
+                                        title={
+                                            autoRefresh
+                                                ? 'Desactivar actualización automática'
+                                                : 'Activar actualización automática'
+                                        }
                                     >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                        />
-                                    </svg>
-                                </button>
+                                        {autoRefresh ? (
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-5 w-5"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            >
+                                                <rect x="6" y="4" width="4" height="16"></rect>
+                                                <rect x="14" y="4" width="4" height="16"></rect>
+                                            </svg>
+                                        ) : (
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-5 w-5"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            >
+                                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                            </svg>
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={smoothRefreshOrders}
+                                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-lg transition-all duration-200"
+                                        title="Actualizar manualmente"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-5 w-5"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
 
                             <OrderFilters
@@ -185,7 +353,8 @@ const ChefDashboard = () => {
                                 onFilterChange={handleFilterChange}
                             />
 
-                            {loading ? (
+                            {/* Only show loading indicator on initial load, not during refresh */}
+                            {loading && !initialLoadCompleteRef.current ? (
                                 <div className="flex justify-center items-center h-64">
                                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                                 </div>
@@ -227,8 +396,9 @@ const ChefDashboard = () => {
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-xl font-semibold text-white">Inventario de Cocina</h2>
                                 <button
-                                    onClick={() => refreshOrders()}
+                                    onClick={() => smoothRefreshOrders()}
                                     className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-lg transition-all duration-200"
+                                    title="Actualizar manualmente"
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
