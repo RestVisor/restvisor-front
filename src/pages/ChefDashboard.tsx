@@ -296,7 +296,7 @@ const ChefDashboard = () => {
                         </div>
 
                         {/* Quick Actions */}
-                        <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 shadow-xl">
+                        {/* <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 shadow-xl">
                             <h2 className="text-xl font-semibold mb-6 text-white">Acciones Rápidas</h2>
                             <div className="space-y-3">
                                 <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 w-full flex items-center justify-between">
@@ -351,7 +351,7 @@ const ChefDashboard = () => {
                                     </svg>
                                 </button>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </main>
