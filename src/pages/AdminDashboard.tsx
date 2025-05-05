@@ -212,7 +212,27 @@ const AdminDashboard = () => {
             let endpoint;
 
             if (activeTab === 'users') endpoint = 'users';
-            else if (activeTab === 'tables') endpoint = 'tables';
+            else if (activeTab === 'tables') {
+                if (editingItem) {
+                    // Si estamos editando una mesa, usamos el endpoint específico para actualizar el estado
+                    const tableData = data as Table;
+                    const response = await fetch(`${API_URL}/tables/${editingItem.id}/estado`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({ estado: tableData.estado }),
+                    });
+
+                    if (!response.ok) throw new Error('Failed to update table state');
+                    fetchData();
+                    resetForm();
+                    setEditingItem(null);
+                    return;
+                }
+                endpoint = 'tables';
+            }
             else if (activeTab === 'products') endpoint = 'products';
             else return; // Should not happen
 
@@ -573,8 +593,8 @@ const AdminDashboard = () => {
                                             {user.role === 'admin'
                                                 ? 'Administrador'
                                                 : user.role === 'chef'
-                                                ? 'Chef'
-                                                : 'Camarero'}
+                                                    ? 'Chef'
+                                                    : 'Camarero'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <button
@@ -621,8 +641,8 @@ const AdminDashboard = () => {
                                             {table.estado === 'disponible'
                                                 ? 'Disponible'
                                                 : table.estado === 'ocupada'
-                                                ? 'Ocupada'
-                                                : 'Reservada'}
+                                                    ? 'Ocupada'
+                                                    : 'Reservada'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <button
@@ -682,13 +702,12 @@ const AdminDashboard = () => {
                                             {product.category}
                                         </td>
                                         <td
-                                            className={`px-6 py-4 whitespace-nowrap ${
-                                                product.stock === 0
+                                            className={`px-6 py-4 whitespace-nowrap ${product.stock === 0
                                                     ? 'text-red-400'
                                                     : product.stock < 5
-                                                    ? 'text-yellow-400'
-                                                    : 'text-green-400'
-                                            }`}
+                                                        ? 'text-yellow-400'
+                                                        : 'text-green-400'
+                                                }`}
                                         >
                                             {product.stock === 0 ? 'Agotado' : product.stock}
                                         </td>
@@ -722,17 +741,15 @@ const AdminDashboard = () => {
                                 .map((product) => (
                                     <div
                                         key={product.id}
-                                        className={`p-4 rounded-lg ${
-                                            product.stock === 0
+                                        className={`p-4 rounded-lg ${product.stock === 0
                                                 ? 'bg-red-900/30 border border-red-800'
                                                 : 'bg-yellow-900/30 border border-yellow-800'
-                                        }`}
+                                            }`}
                                     >
                                         <h4 className="font-semibold text-white">{product.name}</h4>
                                         <p
-                                            className={`text-sm ${
-                                                product.stock === 0 ? 'text-red-400' : 'text-yellow-400'
-                                            }`}
+                                            className={`text-sm ${product.stock === 0 ? 'text-red-400' : 'text-yellow-400'
+                                                }`}
                                         >
                                             Stock: {product.stock === 0 ? 'Agotado' : product.stock}
                                         </p>
@@ -775,11 +792,10 @@ const AdminDashboard = () => {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span
-                                                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                            movement.type === 'entrada'
+                                                        className={`px-2 py-1 rounded-full text-xs font-medium ${movement.type === 'entrada'
                                                                 ? 'bg-green-900 text-green-400'
                                                                 : 'bg-red-900 text-red-400'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {movement.type === 'entrada' ? 'Entrada' : 'Salida'}
                                                     </span>
@@ -833,41 +849,37 @@ const AdminDashboard = () => {
                         <nav className="-mb-px flex space-x-8">
                             <button
                                 onClick={() => setActiveTab('users')}
-                                className={`${
-                                    activeTab === 'users'
+                                className={`${activeTab === 'users'
                                         ? 'border-blue-400 text-blue-400'
                                         : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
-                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200`}
+                                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200`}
                             >
                                 Usuarios
                             </button>
                             <button
                                 onClick={() => setActiveTab('tables')}
-                                className={`${
-                                    activeTab === 'tables'
+                                className={`${activeTab === 'tables'
                                         ? 'border-blue-400 text-blue-400'
                                         : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
-                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200`}
+                                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200`}
                             >
                                 Mesas
                             </button>
                             <button
                                 onClick={() => setActiveTab('products')}
-                                className={`${
-                                    activeTab === 'products'
+                                className={`${activeTab === 'products'
                                         ? 'border-blue-400 text-blue-400'
                                         : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
-                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200`}
+                                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200`}
                             >
                                 Productos
                             </button>
                             <button
                                 onClick={() => setActiveTab('stock')}
-                                className={`${
-                                    activeTab === 'stock'
+                                className={`${activeTab === 'stock'
                                         ? 'border-blue-400 text-blue-400'
                                         : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
-                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200`}
+                                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200`}
                             >
                                 Inventario
                             </button>
@@ -879,24 +891,22 @@ const AdminDashboard = () => {
                     <div className="lg:col-span-1 bg-black/30 backdrop-blur-sm p-6 rounded-lg shadow-xl">
                         <h2 className="text-xl font-semibold mb-4 text-white">
                             {editingItem
-                                ? `Editar ${
-                                      activeTab === 'users'
-                                          ? 'Usuario'
-                                          : activeTab === 'tables'
-                                          ? 'Mesa'
-                                          : activeTab === 'products'
-                                          ? 'Producto'
-                                          : 'Movimiento de Stock'
-                                  }`
-                                : `Añadir ${
-                                      activeTab === 'users'
-                                          ? 'Usuario'
-                                          : activeTab === 'tables'
-                                          ? 'Mesa'
-                                          : activeTab === 'products'
-                                          ? 'Producto'
-                                          : 'Movimiento de Stock'
-                                  }`}
+                                ? `Editar ${activeTab === 'users'
+                                    ? 'Usuario'
+                                    : activeTab === 'tables'
+                                        ? 'Mesa'
+                                        : activeTab === 'products'
+                                            ? 'Producto'
+                                            : 'Movimiento de Stock'
+                                }`
+                                : `Añadir ${activeTab === 'users'
+                                    ? 'Usuario'
+                                    : activeTab === 'tables'
+                                        ? 'Mesa'
+                                        : activeTab === 'products'
+                                            ? 'Producto'
+                                            : 'Movimiento de Stock'
+                                }`}
                         </h2>
                         <div className="text-gray-300">{renderForm()}</div>
                     </div>
@@ -905,10 +915,10 @@ const AdminDashboard = () => {
                             {activeTab === 'users'
                                 ? 'Lista de Usuarios'
                                 : activeTab === 'tables'
-                                ? 'Lista de Mesas'
-                                : activeTab === 'products'
-                                ? 'Lista de Productos'
-                                : 'Historial de Inventario'}
+                                    ? 'Lista de Mesas'
+                                    : activeTab === 'products'
+                                        ? 'Lista de Productos'
+                                        : 'Historial de Inventario'}
                         </h2>
                         {renderList()}
                     </div>
