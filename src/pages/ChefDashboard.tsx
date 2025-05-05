@@ -256,7 +256,7 @@ const ChefDashboard = () => {
             <nav className="bg-black/30 backdrop-blur-sm fixed w-full z-50">
                 <div className="container mx-auto px-6 py-4 flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-white">
-                        Chef <span className="text-blue-400">Dashboard</span>
+                        Panel <span className="text-blue-400">Cocina</span>
                     </h1>
                     <div className="flex items-center space-x-4">
                         <span className="text-gray-300">Bienvenido, {user?.name}</span>
