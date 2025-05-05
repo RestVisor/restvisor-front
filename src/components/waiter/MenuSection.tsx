@@ -77,6 +77,11 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
         }
     };
 
+    // Función para capitalizar las categorías
+    const capitalizeCategory = (category: string) => {
+        return category.toUpperCase();
+    };
+
     return (
         <div className="bg-gray-800/50 backdrop-blur-sm p-8 rounded-2xl border border-gray-700 hover:border-blue-500/50 transition-all duration-300">
             <h2 className="text-xl font-semibold text-white mb-4">MENÚ</h2>
@@ -87,7 +92,7 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
                             onClick={() => toggleCategory(category)}
                             className="w-full p-4 rounded-lg text-white text-left flex justify-between items-center transition-all duration-500 ease-in-out hover:bg-gray-600/50"
                         >
-                            <span className="font-medium">{category}</span>
+                            <span className="font-medium">{capitalizeCategory(category)}</span>
                             <span
                                 className={`transform transition-transform duration-500 ease-in-out ${
                                     expandedCategories[category] ? 'rotate-180' : 'rotate-0'
