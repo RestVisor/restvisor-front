@@ -23,6 +23,7 @@ export interface Order {
     status: string;
     created_at: string;
     active: boolean;
+    details: string;
     tables: {
         numero: number;
     };

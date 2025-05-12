@@ -81,8 +81,14 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdateStatus }) => {
                 >
                     {getStatusText(order.status)}
                 </span>
+                
             </div>
-
+            <span className="text-md font-medium text-white"> 
+                Detalles: <br/>
+                <span className="text-gray-400 mb-2">
+                    {order.details}
+                </span>
+            </span>        
             <div className="mb-4">
                 <p className="text-xs text-gray-400 mb-2">
                     ID Pedido: {order.id} • Creado: {new Date(order.created_at).toLocaleString()}
