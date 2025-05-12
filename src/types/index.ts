@@ -25,6 +25,7 @@ export interface Order {
   status: string;
   orderDetails: OrderDetail[];
   active: boolean;
+  details?: string;
 }
 
 export interface Product {

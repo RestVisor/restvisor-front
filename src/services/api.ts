@@ -53,7 +53,8 @@ export const submitOrderAPI = async (order: Order) => {
             `${API_URL}/orders`,
             {
                 ...order,
-                active: true
+                active: true,
+                details: order.details || ''
             },
             {
                 headers: {

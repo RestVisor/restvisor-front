@@ -22,6 +22,7 @@ const WaiterDashboard = () => {
         status: '',
         orderDetails: [],
         active: true,
+        details: '',
     });
 
     // Estado de la mesa seleccionada
@@ -51,6 +52,7 @@ const WaiterDashboard = () => {
                 created_at: new Date().toString(),
                 orderDetails: [],
                 active: true,
+                details: '',
             };
             setCurrentOrder(newOrder); // Actualizamos el estado de currentOrder
             addOrder(newOrder); // Llamamos a addOrder con el nuevo pedido
@@ -120,6 +122,7 @@ const WaiterDashboard = () => {
             status: '',
             orderDetails: [],
             active: true,
+            details: '',
         });
         setSelectedTable(null);
     };
@@ -169,6 +172,7 @@ const WaiterDashboard = () => {
                     status: '',
                     orderDetails: [],
                     active: true,
+                    details: '',
                 });
                 setSelectedTable(null);
 
@@ -193,6 +197,13 @@ const WaiterDashboard = () => {
                 position: 'top-center',
             });
         }
+    };
+
+    const handleUpdateDetails = (details: string) => {
+        setCurrentOrder(prev => ({
+            ...prev,
+            details
+        }));
     };
 
     return (
@@ -235,6 +246,7 @@ const WaiterDashboard = () => {
                         handleSubmitOrder={handleSubmitOrder}
                         handlePayOrder={handlePayOrder}
                         menuItems={menuItems}
+                        onUpdateDetails={handleUpdateDetails}
                     />
                 </div>
             </main>

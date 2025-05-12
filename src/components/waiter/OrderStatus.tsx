@@ -10,6 +10,7 @@ interface OrderStatusProps {
     handleSubmitOrder: () => void;
     handlePayOrder: () => Promise<void>;
     menuItems: { id: number; name: string; price: number }[];
+    onUpdateDetails?: (details: string) => void;
 }
 
 const OrderStatus: React.FC<OrderStatusProps> = ({
@@ -20,8 +21,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
     handleSubmitOrder,
     handlePayOrder,
     menuItems,
+    onUpdateDetails,
 }) => {
     const [tableTotalOrder, setTableTotalOrder] = useState<Order | null>(null);
+    const [isEditingDetails, setIsEditingDetails] = useState(false);
+    const [details, setDetails] = useState(currentOrder.details || '');
+
+    useEffect(() => {
+        setDetails(currentOrder.details || '');
+    }, [currentOrder]);
 
     useEffect(() => {
         const fetchTableTotal = async () => {
@@ -51,6 +59,13 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
         fetchTableTotal();
     }, [selectedTable]);
 
+    const handleDetailsSubmit = () => {
+        if (onUpdateDetails) {
+            onUpdateDetails(details);
+        }
+        setIsEditingDetails(false);
+    };
+
     return (
         <div className="bg-gray-800/50 backdrop-blur-sm p-8 rounded-2xl border border-gray-700 hover:border-blue-500/50 transition-all duration-300">
             <h2 className="text-xl font-semibold text-white mb-4">Estado del Pedido</h2>
@@ -58,6 +73,41 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
                 <div>
                     <div className="mb-8">
                         <h3 className="text-lg text-white">Mesa {selectedTable.numero} - Pedido Actual</h3>
+
+                        {/* Sección de detalles del pedido */}
+                        <div className="mb-4">
+                            <div className="flex justify-between items-center mb-2">
+                                <h4 className="text-white">Detalles para cocina:</h4>
+                                <button
+                                    onClick={() => setIsEditingDetails(!isEditingDetails)}
+                                    className="text-blue-400 hover:text-blue-300 text-sm"
+                                >
+                                    {isEditingDetails ? 'Cancelar' : 'Editar'}
+                                </button>
+                            </div>
+                            {isEditingDetails ? (
+                                <div className="space-y-2">
+                                    <textarea
+                                        value={details}
+                                        onChange={(e) => setDetails(e.target.value)}
+                                        className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                                        placeholder="Escribe las indicaciones para cocina..."
+                                        rows={3}
+                                    />
+                                    <button
+                                        onClick={handleDetailsSubmit}
+                                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
+                                    >
+                                        Guardar
+                                    </button>
+                                </div>
+                            ) : (
+                                <p className="text-gray-300 bg-gray-800/30 p-3 rounded-lg">
+                                    {details || 'Sin indicaciones especiales'}
+                                </p>
+                            )}
+                        </div>
+
                         <ul>
                             {currentOrder.orderDetails.map((orderDetail) => (
                                 <li key={orderDetail.id} className="flex justify-between items-center text-white">
@@ -80,9 +130,8 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
                         <button
                             onClick={handleSubmitOrder}
                             disabled={currentOrder.orderDetails.length === 0}
-                            className={`bg-blue-600 text-white p-2 rounded transition-all duration-200 transform hover:scale-105 w-full mt-4 ${
-                                currentOrder.orderDetails.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
+                            className={`bg-blue-600 text-white p-2 rounded transition-all duration-200 transform hover:scale-105 w-full mt-4 ${currentOrder.orderDetails.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
                         >
                             Enviar Pedido
                         </button>
