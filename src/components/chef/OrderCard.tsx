@@ -83,7 +83,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdateStatus }) => {
     }
 
     // Check if we can update the status
-    const canUpdateStatus = order.status !== 'entregado';
+    const canUpdateStatus = order.status !== 'entregado' && order.status !== 'listo';
 
     return (
         <div className="bg-gray-800/50 rounded-lg p-4 mb-4 transition-all duration-300 hover:bg-gray-700/50">

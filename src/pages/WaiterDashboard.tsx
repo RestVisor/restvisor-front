@@ -141,6 +141,15 @@ const WaiterDashboard = () => {
         setCurrentOrder((prev) => {
             const existingOrderDetail = prev.orderDetails.find((orderDetail) => orderDetail.producto_id === product.id);
 
+            const currentQuantity = existingOrderDetail ? existingOrderDetail.cantidad : 0;
+            if (currentQuantity + 1 > product.stock) {
+                toast.error(`No hay suficiente stock para ${product.name}. Stock disponible: ${product.stock}`, {
+                    duration: 3000,
+                    position: 'top-center',
+                });
+                return prev;
+            }
+
             if (existingOrderDetail) {
                 return {
                     ...prev,

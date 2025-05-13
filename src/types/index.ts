@@ -34,6 +34,7 @@ export interface Product {
   description: string;
   price: number;
   category: string;
+  stock: number;
 }
 
 export interface OrderDetail {
