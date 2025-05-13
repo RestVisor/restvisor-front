@@ -67,6 +67,21 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdateStatus }) => {
         }
     };
 
+    const getDetailsText = (details: string) => {
+
+        if (!details){
+            return "";
+        } else {
+            return (<span className="text-md font-medium text-white"> 
+                Detalles: <br/>
+                <span className="text-gray-400 mb-2">
+                    {order.details}
+                </span>
+            </span> );
+        }
+
+    }
+
     // Check if we can update the status
     const canUpdateStatus = order.status !== 'entregado';
 
@@ -83,12 +98,9 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdateStatus }) => {
                 </span>
                 
             </div>
-            <span className="text-md font-medium text-white"> 
-                Detalles: <br/>
-                <span className="text-gray-400 mb-2">
-                    {order.details}
-                </span>
-            </span>        
+
+            {getDetailsText(order.details)}
+                   
             <div className="mb-4">
                 <p className="text-xs text-gray-400 mb-2">
                     ID Pedido: {order.id} • Creado: {new Date(order.created_at).toLocaleString()}
