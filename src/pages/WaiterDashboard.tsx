@@ -12,7 +12,17 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const WaiterDashboard = () => {
     const { user, logout } = useAuth();
-    const { tables, menuItems, pendingOrders, getTables, addOrder, submitOrder } = useTablesAndMenu();
+    const {
+        tables,
+        menuItems,
+        pendingOrders,
+        activeOrders,
+        setActiveOrders,
+        tablesWithReadyOrders,
+        getTables,
+        addOrder,
+        submitOrder
+    } = useTablesAndMenu();
 
     // Estado de la orden actual
     const [currentOrder, setCurrentOrder] = useState<Order>({
@@ -29,7 +39,74 @@ const WaiterDashboard = () => {
     const [selectedTable, setSelectedTable] = useState<Table | null>(null);
 
     // Función para seleccionar una mesa
-    const handleTableSelect = (table: Table) => {
+    const handleTableSelect = async (table: Table) => {
+        // Si la mesa tiene pedidos listos, actualizarlos a entregado
+        if (tablesWithReadyOrders.includes(table.numero)) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
+
+                // Obtener los pedidos activos de la mesa
+                const response = await axios.get(`${API_URL}/orders/mesa/${table.numero}/activos`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                // Verificar si la respuesta es un array o un objeto único
+                const orders = Array.isArray(response.data) ? response.data : [response.data];
+
+                // Filtrar los pedidos listos y actualizarlos a entregado
+                const readyOrders = orders.filter((order: Order) =>
+                    order.active && order.status === 'listo'
+                );
+
+                // Actualizar cada pedido listo a entregado
+                for (const order of readyOrders) {
+                    try {
+                        await axios.put(
+                            `${API_URL}/orders/${order.id}/status`,
+                            { status: 'entregado' },
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                },
+                            }
+                        );
+                    } catch (error) {
+                        console.error(`Error updating order ${order.id}:`, error);
+                    }
+                }
+
+                // Actualizar los pedidos activos en el estado local
+                const updatedActiveOrders = activeOrders.map(order =>
+                    order.tableNumber === table.numero && order.status === 'listo'
+                        ? { ...order, status: 'entregado' }
+                        : order
+                );
+                setActiveOrders(updatedActiveOrders);
+
+                // Mostrar notificación de éxito
+                toast.success('Pedidos marcados como entregados', {
+                    duration: 3000,
+                    position: 'top-center',
+                    icon: '✅',
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    },
+                });
+            } catch (error) {
+                console.error('Error updating order status:', error);
+                toast.error('Error al actualizar el estado de los pedidos', {
+                    duration: 3000,
+                    position: 'top-center',
+                });
+            }
+        }
+
         // Antes de cambiar de mesa, guardar el pedido actual si tiene mesa asignada
         if (currentOrder.tableNumber !== 0) {
             addOrder(currentOrder);

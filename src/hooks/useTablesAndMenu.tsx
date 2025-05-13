@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { Table, Product, Order } from '../types';
-import { getTablesAPI, getMenuItemsAPI, submitOrderAPI, submitDetailOrderAPI, updateTableState } from '../services/api';
+import { getTablesAPI, getMenuItemsAPI, submitOrderAPI, submitDetailOrderAPI, updateTableState, getActiveOrders } from '../services/api';
 
 interface TablesAndMenuContextType {
   tables: Table[];
@@ -11,6 +11,8 @@ interface TablesAndMenuContextType {
   getMenuItems: () => void;
   addOrder: (order: Order) => void;
   submitOrder: (order: Order) => void;
+  setActiveOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+  tablesWithReadyOrders: number[];
 }
 
 const TablesAndMenuContext = createContext<TablesAndMenuContextType | null>(null);
@@ -20,11 +22,37 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
   const [tables, setTables] = useState<Table[]>([]);
   const [menuItems, setMenuItems] = useState<Product[]>([]);
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
-  const [pendingOrders, setPendingOrders] = useState<Order[]>([]); // Estado para los pedidos pendientes
+  const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
+  const [tablesWithReadyOrders, setTablesWithReadyOrders] = useState<number[]>([]);
 
   useEffect(() => {
     getTables();
     getMenuItems();
+  }, []);
+
+  // Efecto para verificar periódicamente los pedidos activos
+  useEffect(() => {
+    const checkActiveOrders = async () => {
+      try {
+        const orders = await getActiveOrders();
+        const readyOrders = orders.filter(order =>
+          order.active && order.status === 'listo'
+        );
+
+        const tablesWithReady = readyOrders.map(order => order.tableNumber);
+        setTablesWithReadyOrders(tablesWithReady);
+      } catch (error) {
+        console.error('Error checking active orders:', error);
+      }
+    };
+
+    // Verificar inmediatamente
+    checkActiveOrders();
+
+    // Configurar el intervalo para verificar cada 5 segundos
+    const intervalId = setInterval(checkActiveOrders, 10000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const getTables = async () => {
@@ -52,8 +80,8 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
 
     if (existingPendingOrder) {
       const updatedOrder = {
-            ...existingPendingOrder,
-            orderDetails: order.orderDetails,
+        ...existingPendingOrder,
+        orderDetails: order.orderDetails,
       };
 
       setPendingOrders((prevOrders) =>
@@ -89,7 +117,7 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
         if (table) {
           // Actualizar el estado de la mesa a ocupada
           await updateTableState(table.id, 'ocupada');
-          
+
           // Actualizar la lista de mesas para refrescar la vista
           await getTables();
         }
@@ -117,6 +145,8 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
         getMenuItems,
         addOrder,
         submitOrder,
+        setActiveOrders,
+        tablesWithReadyOrders,
       }}
     >
       {children}

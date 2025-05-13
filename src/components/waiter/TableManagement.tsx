@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Table } from '../../types';
+import { useTablesAndMenu } from '../../hooks/useTablesAndMenu';
 
 interface TableManagementProps {
     tables: Table[];
@@ -7,6 +8,7 @@ interface TableManagementProps {
 }
 
 const TableManagement: React.FC<TableManagementProps> = ({ tables, handleTableSelect }) => {
+    const { tablesWithReadyOrders } = useTablesAndMenu();
     const [hoveredTable, setHoveredTable] = useState<number | null>(null);
 
     return (
@@ -18,6 +20,7 @@ const TableManagement: React.FC<TableManagementProps> = ({ tables, handleTableSe
                     const isOccupied = table.estado === 'ocupada';
                     const isReserved = table.estado === 'reservada';
                     const isFree = !isOccupied && !isReserved;
+                    const hasReadyOrders = isOccupied && tablesWithReadyOrders.includes(table.numero);
 
                     return (
                         <div
@@ -30,9 +33,8 @@ const TableManagement: React.FC<TableManagementProps> = ({ tables, handleTableSe
                             <div className="flex flex-col items-center">
                                 {/* Contenedor de la mesa con sombra */}
                                 <div
-                                    className={`relative transition-all duration-300 ${
-                                        isHovered ? 'transform -translate-y-1' : ''
-                                    }`}
+                                    className={`relative transition-all duration-300 ${isHovered ? 'transform -translate-y-1' : ''
+                                        }`}
                                 >
                                     {/* Mesa Superior - Diseño Flat/Minimal */}
                                     <div
@@ -42,20 +44,21 @@ const TableManagement: React.FC<TableManagementProps> = ({ tables, handleTableSe
                                         flex items-center justify-center
                                         transition-all duration-300
                                         border-2
-                                        ${
-                                            isOccupied
-                                                ? 'bg-rose-500/90 border-rose-600/80'
-                                                : isReserved
-                                                ? 'bg-amber-500/90 border-amber-600/80'
-                                                : 'bg-emerald-500/90 border-emerald-600/80'
-                                        }
+                                        ${hasReadyOrders
+                                                ? 'bg-orange-500/90 border-orange-600/80 animate-pulse'
+                                                : isOccupied
+                                                    ? 'bg-rose-500/90 border-rose-600/80'
+                                                    : isReserved
+                                                        ? 'bg-amber-500/90 border-amber-600/80'
+                                                        : 'bg-emerald-500/90 border-emerald-600/80'
+                                            }
                                         ${isHovered ? 'shadow-lg shadow-black/20' : 'shadow-md shadow-black/10'}
                                     `}
                                     >
                                         {/* Indicadores de uso en la mesa */}
                                         <div className="absolute inset-0 overflow-hidden">
                                             {/* Círculos decorativos para mesa ocupada */}
-                                            {isOccupied && (
+                                            {isOccupied && !hasReadyOrders && (
                                                 <>
                                                     <div className="absolute w-6 h-6 rounded-full border-2 border-white/30 top-2 left-2"></div>
                                                     <div className="absolute w-5 h-5 rounded-full border-2 border-white/30 bottom-3 right-3"></div>
@@ -97,13 +100,14 @@ const TableManagement: React.FC<TableManagementProps> = ({ tables, handleTableSe
                                         absolute -bottom-1 left-1/2 transform -translate-x-1/2
                                         w-20 h-1.5 rounded-full
                                         transition-all duration-300
-                                        ${
-                                            isOccupied
-                                                ? 'bg-rose-900/40'
-                                                : isReserved
-                                                ? 'bg-amber-900/40'
-                                                : 'bg-emerald-900/40'
-                                        }
+                                        ${hasReadyOrders
+                                                ? 'bg-orange-900/40'
+                                                : isOccupied
+                                                    ? 'bg-rose-900/40'
+                                                    : isReserved
+                                                        ? 'bg-amber-900/40'
+                                                        : 'bg-emerald-900/40'
+                                            }
                                         ${isHovered ? 'blur-sm w-16 opacity-70' : 'blur-[2px] opacity-50'}
                                     `}
                                     ></div>
@@ -118,10 +122,17 @@ const TableManagement: React.FC<TableManagementProps> = ({ tables, handleTableSe
                                     font-medium
                                     transition-all duration-300
                                     ${isHovered ? 'opacity-100' : 'opacity-80'}
-                                    ${isOccupied ? 'text-rose-300' : isReserved ? 'text-amber-300' : 'text-emerald-300'}
+                                    ${hasReadyOrders
+                                            ? 'text-orange-300'
+                                            : isOccupied
+                                                ? 'text-rose-300'
+                                                : isReserved
+                                                    ? 'text-amber-300'
+                                                    : 'text-emerald-300'
+                                        }
                                 `}
                                 >
-                                    {table.estado}
+                                    {hasReadyOrders ? 'Pedido Listo' : table.estado}
                                 </div>
 
                                 {/* Barra de estado - visible solo en hover */}
@@ -130,7 +141,14 @@ const TableManagement: React.FC<TableManagementProps> = ({ tables, handleTableSe
                                     w-12 h-0.5 mt-1.5
                                     transition-all duration-300
                                     ${isHovered ? 'opacity-100' : 'opacity-0'}
-                                    ${isOccupied ? 'bg-rose-500' : isReserved ? 'bg-amber-500' : 'bg-emerald-500'}
+                                    ${hasReadyOrders
+                                            ? 'bg-orange-500'
+                                            : isOccupied
+                                                ? 'bg-rose-500'
+                                                : isReserved
+                                                    ? 'bg-amber-500'
+                                                    : 'bg-emerald-500'
+                                        }
                                 `}
                                 ></div>
                             </div>
@@ -145,7 +163,14 @@ const TableManagement: React.FC<TableManagementProps> = ({ tables, handleTableSe
                                 transform scale-0
                                 transition-all duration-200
                                 ${isHovered ? 'scale-100' : ''}
-                                ${isOccupied ? 'bg-rose-700' : isReserved ? 'bg-amber-700' : 'bg-emerald-700'}
+                                ${hasReadyOrders
+                                        ? 'bg-orange-700'
+                                        : isOccupied
+                                            ? 'bg-rose-700'
+                                            : isReserved
+                                                ? 'bg-amber-700'
+                                                : 'bg-emerald-700'
+                                    }
                             `}
                             >
                                 <span className="text-white text-xs font-bold">+</span>

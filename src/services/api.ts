@@ -171,3 +171,23 @@ export const getActiveOrdersByTable = async (tableNumber: number) => {
         return null;
     }
 };
+
+//CONSEGUIR LOS PEDIDOS ACTIVOS
+export const getActiveOrders = async (): Promise<Order[]> => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No token found, please log in');
+        }
+
+        const response = await axios.get(`${API_URL}/orders/active`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener los pedidos activos:', error);
+        return [];
+    }
+};
