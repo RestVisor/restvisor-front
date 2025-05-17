@@ -9,48 +9,49 @@ interface MenuSectionProps {
 
 const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem }) => {
     const [searchTerm, setSearchTerm] = useState('');
-
-    // Filter menu items based on search term
-    const filteredMenuItems = useMemo(() => {
-        if (!searchTerm) return menuItems;
-        return menuItems.filter(
-            (product) =>
-                product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                product.category?.toLowerCase().includes(searchTerm.toLowerCase()),
-        );
-    }, [menuItems, searchTerm]);
-
-    // Agrupar productos por categoría (using filtered items)
-    const groupedProducts = useMemo(() => {
-        return filteredMenuItems.reduce((acc, product) => {
-            const category = product.category || 'Sin categoría';
-            if (!acc[category]) {
-                acc[category] = [];
-            }
-            acc[category].push(product);
-            return acc;
-        }, {} as Record<string, Product[]>);
-    }, [filteredMenuItems]);
-
-    const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
-
-    // Initialize expandedCategories: expand all if no search, otherwise expand categories with results
-    useEffect(() => {
-        const initialExpanded: Record<string, boolean> = {};
-        Object.keys(groupedProducts).forEach(category => {
-            initialExpanded[category] = true; // Expand all categories that have items after filtering
-        });
-        setExpandedCategories(initialExpanded);
-    }, [groupedProducts]); // Re-run when groupedProducts changes (due to search)
-    
-
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [productsStock, setProductsStock] = useState<Record<number, number>>({});
 
+    // Get all unique categories
+    const categories = useMemo(() => {
+        const cats = menuItems.map(item => item.category || 'Sin categoría');
+        return [...new Set(cats)];
+    }, [menuItems]);
+    
+    // Set first category as active initially
+    useEffect(() => {
+        if (categories.length > 0 && !activeCategory) {
+            setActiveCategory(categories[0]);
+        }
+    }, [categories, activeCategory]);
+
+    // Filter menu items based on search term and active category
+    const filteredItems = useMemo(() => {
+        if (!menuItems) return [];
+        
+        let items = menuItems;
+        
+        // Apply search filter
+        if (searchTerm) {
+            items = items.filter(product => 
+                product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.category?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        } 
+        // Apply category filter if no search term
+        else if (activeCategory) {
+            items = items.filter(product => 
+                (product.category || 'Sin categoría') === activeCategory
+            );
+        }
+        
+        return items;
+    }, [menuItems, searchTerm, activeCategory]);
+
+    // Fetch stock data
     useEffect(() => {
         const fetchStock = async () => {
-            // Only fetch stock for currently visible (filtered) items if performance is an issue
-            // For simplicity, fetching for all original menuItems here, assuming not too many unique items overall.
             if (menuItems.length === 0) return;
             try {
                 const stockPromises = menuItems.map(async (product) => {
@@ -68,7 +69,7 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
             } catch (error) {
                 console.error('Error al cargar el stock:', error);
                 const defaultStock = menuItems.reduce((acc, product) => {
-                    acc[product.id] = product.stock !== undefined ? product.stock : 1; // Use actual stock if available, else default
+                    acc[product.id] = product.stock !== undefined ? product.stock : 1;
                     return acc;
                 }, {} as Record<number, number>);
                 setProductsStock(defaultStock);
@@ -76,16 +77,9 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
         };
 
         fetchStock();
-        const intervalId = setInterval(fetchStock, 5000);
+        const intervalId = setInterval(fetchStock, 10000);
         return () => clearInterval(intervalId);
-    }, [menuItems]); // menuItems dependency for stock fetching
-
-    const toggleCategory = (category: string) => {
-        setExpandedCategories((prev) => ({
-            ...prev,
-            [category]: !prev[category],
-        }));
-    };
+    }, [menuItems]);
 
     const handleItemClick = (product: Product) => {
         if (productsStock[product.id] > 0) {
@@ -93,81 +87,135 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
         }
     };
 
-    const capitalizeCategory = (category: string) => {
-        return category.toUpperCase();
-    };
-
     return (
-        <div className="bg-gray-800/50 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-gray-700/60 shadow-xl max-h-[calc(100vh-12rem)] overflow-y-auto">
-            <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">MENÚ</h2>
-            
-            {/* Search Bar */}
-            <div className="mb-6">
-                <input 
-                    type="text"
-                    placeholder="Buscar en el menú..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full p-3 bg-gray-700/60 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                />
-            </div>
-
-            {Object.keys(groupedProducts).length === 0 && searchTerm && (
-                 <p className="text-gray-400 text-center py-4">No se encontraron productos para "{searchTerm}".</p>
-            )}
-            
-            <div className="space-y-3">
-                {Object.entries(groupedProducts).map(([category, products]) => (
-                    <div key={category} className="bg-gray-700/40 rounded-lg shadow-md">
-                        <button
-                            onClick={() => toggleCategory(category)}
-                            className="w-full p-4 rounded-t-lg text-white text-left flex justify-between items-center transition-colors duration-300 ease-in-out hover:bg-gray-600/50 focus:outline-none"
-                        >
-                            <span className="font-semibold text-lg tracking-wide">{capitalizeCategory(category)}</span>
-                            <span
-                                className={`transform transition-transform duration-300 ease-in-out ${expandedCategories[category] ? 'rotate-180' : ''}`}
+        <div className="bg-gray-800/80 backdrop-blur-md rounded-xl border border-gray-700/60 shadow-xl overflow-hidden h-full flex flex-col">
+            {/* Header with Search */}
+            <div className="p-3 bg-gradient-to-r from-blue-900/60 to-purple-900/60 border-b border-gray-700/60">
+                <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-lg font-bold text-white tracking-wide flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1 text-blue-400">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                        MENÚ
+                    </h2>
+                    <div className="relative w-36">
+                        <input 
+                            type="text"
+                            placeholder="Buscar..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full py-1 px-2 bg-gray-900/70 border border-gray-600/50 rounded-md text-white placeholder-gray-400 text-xs focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                        />
+                        {searchTerm && (
+                            <button 
+                                onClick={() => setSearchTerm('')}
+                                className="absolute right-1 top-1 text-gray-400 hover:text-white"
                             >
-                                {/* Chevron Icon */}
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                            </span>
-                        </button>
-                        {expandedCategories[category] && (
-                            <div className="p-2 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 border-t border-gray-600/30">
-                                {products.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        className={`p-3 sm:p-4 rounded-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl relative overflow-hidden
-                                            ${
-                                            productsStock[item.id] === 0
-                                                ? 'bg-red-700/30 border border-red-600/50 cursor-not-allowed'
-                                                : 'bg-gray-600/50 border border-gray-500/50 hover:bg-blue-600/40 hover:border-blue-500/70 cursor-pointer'
-                                        }`}
-                                        onClick={() => handleItemClick(item)}
-                                    >
-                                        <h3 className="text-md sm:text-lg font-semibold text-white">{item.name}</h3>
-                                        {item.description && <p className="text-xs sm:text-sm text-gray-300 mb-1 truncate">{item.description}</p>}
-                                        <p className="text-lg sm:text-xl font-bold text-white mt-2">${item.price.toFixed(2)}</p>
-                                        
-                                        {/* Stock Info Overlay or Badge */}
-                                        <div className={`absolute top-2 right-2 px-2 py-1 text-xs rounded-full font-semibold
-                                            ${
-                                            productsStock[item.id] === 0 ? 'bg-red-500 text-white' :
-                                            productsStock[item.id] > 0 && productsStock[item.id] < 10 ? 'bg-yellow-500 text-black' :
-                                            'hidden' // Hide if stock is >= 10 or undefined
-                                            }
-                                        `}>
-                                            {productsStock[item.id] === 0 ? 'Agotado' : 
-                                             productsStock[item.id] < 10 ? `Quedan ${productsStock[item.id]}` : ''}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            </button>
                         )}
                     </div>
-                ))}
+                </div>
+                
+                {/* Category Pills */}
+                {!searchTerm && (
+                    <div className="flex overflow-x-auto pb-1 hide-scrollbar space-x-1">
+                        {categories.map(category => (
+                            <button
+                                key={category}
+                                onClick={() => setActiveCategory(category)}
+                                className={`px-2 py-1 rounded-full text-xs whitespace-nowrap font-medium transition-all duration-200 ${
+                                    activeCategory === category
+                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                                        : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700'
+                                }`}
+                            >
+                                {category}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
+
+            {/* Menu Items Grid */}
+            <div className="flex-grow overflow-y-auto p-2 grid grid-cols-2 gap-2 bg-gradient-to-b from-gray-800/20 to-gray-900/40">
+                {filteredItems.length === 0 && (
+                    <div className="col-span-2 flex flex-col items-center justify-center py-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-gray-500 mb-2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 16.318A4.486 4.486 0 0012.016 15a4.486 4.486 0 00-3.198 1.318M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
+                        </svg>
+                        <p className="text-gray-400 text-sm text-center">
+                            {searchTerm ? `No se encontraron productos para "${searchTerm}"` : 'No hay productos en esta categoría'}
+                        </p>
+                    </div>
+                )}
+                
+                {filteredItems.map((item) => {
+                    const isOutOfStock = productsStock[item.id] === 0;
+                    const isLowStock = productsStock[item.id] > 0 && productsStock[item.id] < 5;
+                    
+                    return (
+                        <div
+                            key={item.id}
+                            onClick={() => handleItemClick(item)}
+                            className={`relative overflow-hidden group rounded-lg transition-all duration-200 ${
+                                isOutOfStock 
+                                    ? 'bg-gradient-to-br from-red-950/40 to-red-900/20 border border-red-800/40 cursor-not-allowed opacity-70'
+                                    : 'bg-gradient-to-br from-gray-700/40 to-gray-800/60 border border-gray-600/30 cursor-pointer hover:border-blue-500/50 hover:from-blue-900/30 hover:to-blue-800/20'
+                            } p-2 flex flex-col justify-between`}
+                        >
+                            {/* Product Name & Price */}
+                            <div>
+                                <h3 className="text-sm font-semibold text-white group-hover:text-blue-300 transition-colors truncate">
+                                    {item.name}
+                                </h3>
+                                {item.description && (
+                                    <p className="text-xs text-gray-400 truncate">{item.description}</p>
+                                )}
+                            </div>
+                            
+                            {/* Price & Add Button */}
+                            <div className="flex justify-between items-center mt-1">
+                                <p className="text-sm font-bold text-white">${item.price.toFixed(2)}</p>
+                                
+                                {!isOutOfStock && (
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-blue-400">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                        </svg>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {/* Stock Indicator */}
+                            {(isOutOfStock || isLowStock) && (
+                                <span className={`absolute top-0 right-0 w-0 h-0
+                                    border-t-[20px] ${isOutOfStock ? 'border-t-red-600' : 'border-t-amber-500'}
+                                    border-l-[20px] border-l-transparent`}>
+                                </span>
+                            )}
+                            
+                            {/* Add item animation */}
+                            <div className="absolute inset-0 bg-blue-500/20 pointer-events-none opacity-0 
+                                group-hover:opacity-100 transition-opacity rounded-lg">
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+            
+            {/* Custom CSS */}
+            <style jsx>{`
+                .hide-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .hide-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
         </div>
     );
 };

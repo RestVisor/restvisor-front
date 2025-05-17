@@ -221,36 +221,36 @@ const WaiterDashboard: React.FC = () => {
             </nav>
 
             <main className="container mx-auto px-6 py-24">
-                <div className="grid grid-cols-1 gap-8">
-                    {/* First row: Tables and Menu side by side */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Tables section - takes the left column */}
-                        <div className="h-full">
-                            <TableManagement 
-                                tables={tables} 
-                                handleTableSelect={handleTableSelect}
-                                selectedTableId={selectedTable?.id || null}
-                            />
-                        </div>
-                        
-                        {/* Menu section - takes the right column */}
+                <div className="grid grid-cols-1 gap-6">
+                    {/* First row: Tables taking full width */}
+                    <div className="col-span-1">
+                        <TableManagement 
+                            tables={tables} 
+                            handleTableSelect={handleTableSelect}
+                            selectedTableId={selectedTable?.id || null}
+                        />
+                    </div>
+                    
+                    {/* Second row: Menu and Order Details side by side */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Menu section - takes the left column */}
                         <div className="h-full">
                             <MenuSection menuItems={menuItems} handleAddMenuItem={handleAddMenuItem} />
                         </div>
-                    </div>
-                    
-                    {/* Second row: Order Details - takes full width */}
-                    <div className="col-span-1">
-                        <OrderStatus
-                            selectedTable={selectedTable}
-                            currentOrder={currentOrder}
-                            handleRemoveItem={handleRemoveItem}
-                            calculateTotal={calculateTotal}
-                            handleSubmitOrder={handleSubmitOrder}
-                            handlePayOrder={handlePayOrder}
-                            menuItems={menuItems}
-                            onUpdateDetails={handleUpdateOrderDetails}
-                        />
+                        
+                        {/* Order Details section - takes the right column */}
+                        <div className="h-full">
+                            <OrderStatus
+                                selectedTable={selectedTable}
+                                currentOrder={currentOrder}
+                                handleRemoveItem={handleRemoveItem}
+                                calculateTotal={calculateTotal}
+                                handleSubmitOrder={handleSubmitOrder}
+                                handlePayOrder={handlePayOrder}
+                                menuItems={menuItems}
+                                onUpdateDetails={handleUpdateOrderDetails}
+                            />
+                        </div>
                     </div>
                 </div>
             </main>
