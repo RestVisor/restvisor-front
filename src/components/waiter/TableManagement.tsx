@@ -1,86 +1,139 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Table } from '../../types';
 import { useTablesAndMenu } from '../../hooks/useTablesAndMenu';
-// Suggesting simple icons. You might use an icon library like react-icons.
-const TableIconFree = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-const TableIconOccupied = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>;
-const TableIconReserved = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-const TableIconReady = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>;
 
 interface TableManagementProps {
     tables: Table[];
     handleTableSelect: (table: Table) => void;
-    selectedTableId?: number | null; // Added to indicate selected table
+    selectedTableId?: number | null;
 }
 
 const TableManagement: React.FC<TableManagementProps> = ({ tables, handleTableSelect, selectedTableId }) => {
     const { tablesWithReadyOrders } = useTablesAndMenu();
-    const [hoveredTable, setHoveredTable] = useState<number | null>(null);
 
     return (
-        <div className="bg-gray-800/50 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-gray-700/60 shadow-2xl">
-            <h2 className="text-2xl font-bold text-white mb-8 border-b border-gray-700/50 pb-4 tracking-tight">Gestión de Mesas</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8">
+        <div className="bg-gray-800/80 backdrop-blur-md rounded-xl border border-gray-700/60 shadow-xl overflow-hidden">
+            <div className="p-4 bg-gradient-to-r from-indigo-900/60 to-purple-900/60 border-b border-gray-700/60">
+                <h2 className="text-lg font-bold text-white tracking-wide flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1 text-indigo-400">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                    GESTIÓN DE MESAS
+                </h2>
+            </div>
+            
+            <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 bg-gradient-to-b from-gray-800/20 to-gray-900/40">
                 {tables.map((table) => {
-                    const isHovered = hoveredTable === table.id;
                     const isSelected = selectedTableId === table.id;
                     const isOccupied = table.estado === 'ocupada';
                     const isReserved = table.estado === 'reservada';
-                    const isFree = table.estado === 'disponible'; // Explicitly check for 'disponible'
                     const hasReadyOrders = isOccupied && tablesWithReadyOrders.includes(table.numero);
 
-                    let bgColor = 'bg-emerald-500/90';
-                    let borderColor = 'border-emerald-600/80';
-                    let textColor = 'text-emerald-300';
-                    let icon = <TableIconFree />;
-                    let statusText = table.estado;
+                    // Define status styles based on table state
+                    let statusStyles = {
+                        bgGradient: 'from-emerald-600/80 to-emerald-700/80',
+                        borderColor: 'border-emerald-500/70',
+                        ringColor: 'ring-emerald-400/50',
+                        icon: (
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clipRule="evenodd" />
+                            </svg>
+                        ),
+                        statusText: 'DISPONIBLE'
+                    };
 
                     if (hasReadyOrders) {
-                        bgColor = 'bg-orange-500/90';
-                        borderColor = 'border-orange-600/80';
-                        textColor = 'text-orange-300';
-                        icon = <TableIconReady />;
-                        statusText = 'Pedido Listo';
+                        statusStyles = {
+                            bgGradient: 'from-orange-500/80 to-orange-600/80',
+                            borderColor: 'border-orange-400/70',
+                            ringColor: 'ring-orange-300/50',
+                            icon: (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                    <path d="M5.85 3.5a.75.75 0 00-1.117-1 9.719 9.719 0 00-2.348 4.876.75.75 0 001.479.248A8.219 8.219 0 015.85 3.5zM19.267 2.5a.75.75 0 10-1.118 1 8.22 8.22 0 011.987 4.124.75.75 0 001.48-.248A9.72 9.72 0 0019.266 2.5z" />
+                                    <path fillRule="evenodd" d="M12 2.25A6.75 6.75 0 005.25 9v.75a8.217 8.217 0 01-2.119 5.52.75.75 0 00.298 1.206c1.544.57 3.16.99 4.831 1.243a3.75 3.75 0 107.48 0 24.583 24.583 0 004.83-1.244.75.75 0 00.298-1.205 8.217 8.217 0 01-2.118-5.52V9A6.75 6.75 0 0012 2.25zM9.75 18c0-.034 0-.067.002-.1a25.05 25.05 0 004.496 0l.002.1a2.25 2.25 0 11-4.5 0z" clipRule="evenodd" />
+                                </svg>
+                            ),
+                            statusText: 'LISTO'
+                        };
                     } else if (isOccupied) {
-                        bgColor = 'bg-rose-500/90';
-                        borderColor = 'border-rose-600/80';
-                        textColor = 'text-rose-300';
-                        icon = <TableIconOccupied />;
+                        statusStyles = {
+                            bgGradient: 'from-rose-500/80 to-rose-600/80',
+                            borderColor: 'border-rose-400/70',
+                            ringColor: 'ring-rose-300/50',
+                            icon: (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                    <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+                                </svg>
+                            ),
+                            statusText: 'OCUPADA'
+                        };
                     } else if (isReserved) {
-                        bgColor = 'bg-amber-500/90';
-                        borderColor = 'border-amber-600/80';
-                        textColor = 'text-amber-300';
-                        icon = <TableIconReserved />;
-                    } // isFree will use default emerald
+                        statusStyles = {
+                            bgGradient: 'from-amber-500/80 to-amber-600/80',
+                            borderColor: 'border-amber-400/70',
+                            ringColor: 'ring-amber-300/50',
+                            icon: (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                    <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" />
+                                </svg>
+                            ),
+                            statusText: 'RESERVADA'
+                        };
+                    }
 
                     return (
                         <div
                             key={table.id}
-                            className={`relative cursor-pointer group transform transition-all duration-300 ease-in-out 
-                                        ${isHovered && !isSelected ? 'scale-105 shadow-lg' : ''} 
-                                        ${isSelected ? 'scale-105 shadow-xl ring-2 ring-blue-500 ring-offset-2 ring-offset-gray-800/50 rounded-lg' : ''}`}
+                            className={`cursor-pointer group transition-all duration-200 ${
+                                isSelected ? 'scale-105 z-10' : 'hover:scale-105'
+                            }`}
                             onClick={() => handleTableSelect(table)}
-                            onMouseEnter={() => setHoveredTable(table.id)}
-                            onMouseLeave={() => setHoveredTable(null)}
                         >
-                            <div className={`flex flex-col items-center p-4 rounded-lg border-2 ${borderColor} ${bgColor} ${hasReadyOrders ? 'animate-pulse' : ''} transition-all duration-300`}>
-                                <div className="mb-2 text-white">
-                                    {icon}
+                            <div className={`bg-gradient-to-br ${statusStyles.bgGradient} 
+                                p-3 rounded-lg border ${statusStyles.borderColor} 
+                                ${hasReadyOrders ? 'animate-pulse' : ''} 
+                                ${isSelected ? `ring-2 ${statusStyles.ringColor}` : ''}
+                                transition-all duration-200 shadow-md hover:shadow-lg`}>
+                                
+                                <div className="flex items-center gap-2.5">
+                                    {/* Table number in circle */}
+                                    <div className="bg-white/20 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm">
+                                        <span className="text-white font-bold text-xl">{table.numero}</span>
+                                    </div>
+                                    
+                                    {/* Status information */}
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-white">{statusStyles.icon}</span>
+                                            <span className="text-white text-xs font-semibold tracking-wider">
+                                                {statusStyles.statusText}
+                                            </span>
+                                        </div>
+                                        {hasReadyOrders && (
+                                            <div className="text-[10px] text-white/80 mt-0.5 rounded-sm">
+                                                Pedido listo para servir
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <span className="text-white font-bold text-2xl mb-1">
-                                    {table.numero}
-                                </span>
-                                <span className={`text-xs uppercase font-semibold tracking-wider ${textColor}`}>
-                                    {statusText}
-                                </span>
+                                
+                                {/* Selection indicator */}
+                                {isSelected && (
+                                    <div className="absolute -top-1 -right-1 bg-white w-3 h-3 rounded-full animate-ping"></div>
+                                )}
                             </div>
-                            {/* Optional: Add a small visual cue for hover when not selected */}
-                            {isHovered && !isSelected && (
-                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full opacity-75"></div>
-                            )}
                         </div>
                     );
                 })}
+                
+                {tables.length === 0 && (
+                    <div className="col-span-full flex flex-col items-center justify-center py-8 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 mb-2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                        </svg>
+                        <p>No hay mesas disponibles</p>
+                    </div>
+                )}
             </div>
         </div>
     );
