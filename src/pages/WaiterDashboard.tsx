@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useTablesAndMenu } from '../hooks/useTablesAndMenu';
 import { Table, Product, Order, OrderDetail } from '../types';
 import { useAuth } from '../hooks/useAuth';
@@ -10,7 +10,7 @@ import toast, { Toaster } from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const WaiterDashboard = () => {
+const WaiterDashboard: React.FC = () => {
     const { user, logout } = useAuth();
     const {
         tables,
@@ -24,248 +24,161 @@ const WaiterDashboard = () => {
         submitOrder
     } = useTablesAndMenu();
 
-    // Estado de la orden actual
+    const [selectedTable, setSelectedTable] = useState<Table | null>(null);
     const [currentOrder, setCurrentOrder] = useState<Order>({
         id: Date.now(),
         tableNumber: 0,
-        created_at: new Date().toString(),
-        status: '',
+        status: 'pending',
+        created_at: new Date().toISOString(),
         orderDetails: [],
         active: true,
-        details: '',
+        details: ''
     });
 
-    // Estado de la mesa seleccionada
-    const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-
-    // Función para seleccionar una mesa
     const handleTableSelect = async (table: Table) => {
-        // Si la mesa tiene pedidos listos, actualizarlos a entregado
-        if (tablesWithReadyOrders.includes(table.numero)) {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) return;
-
-                // Obtener los pedidos activos de la mesa
-                const response = await axios.get(`${API_URL}/orders/mesa/${table.numero}/activos`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                // Verificar si la respuesta es un array o un objeto único
-                const orders = Array.isArray(response.data) ? response.data : [response.data];
-
-                // Filtrar los pedidos listos y actualizarlos a entregado
-                const readyOrders = orders.filter((order: Order) =>
-                    order.active && order.status === 'listo'
-                );
-
-                // Actualizar cada pedido listo a entregado
-                for (const order of readyOrders) {
-                    try {
-                        await axios.put(
-                            `${API_URL}/orders/${order.id}/status`,
-                            { status: 'entregado' },
-                            {
-                                headers: {
-                                    Authorization: `Bearer ${token}`,
-                                    'Content-Type': 'application/json'
-                                },
-                            }
-                        );
-                    } catch (error) {
-                        console.error(`Error updating order ${order.id}:`, error);
-                    }
-                }
-
-                // Actualizar los pedidos activos en el estado local
-                const updatedActiveOrders = activeOrders.map(order =>
-                    order.tableNumber === table.numero && order.status === 'listo'
-                        ? { ...order, status: 'entregado' }
-                        : order
-                );
-                setActiveOrders(updatedActiveOrders);
-
-                // Mostrar notificación de éxito
-                toast.success('Pedidos marcados como entregados', {
-                    duration: 3000,
-                    position: 'top-center',
-                    icon: '✅',
-                    style: {
-                        borderRadius: '10px',
-                        background: '#333',
-                        color: '#fff',
-                    },
-                });
-            } catch (error) {
-                console.error('Error updating order status:', error);
-                toast.error('Error al actualizar el estado de los pedidos', {
-                    duration: 3000,
-                    position: 'top-center',
-                });
-            }
-        }
-
-        // Antes de cambiar de mesa, guardar el pedido actual si tiene mesa asignada
-        if (currentOrder.tableNumber !== 0) {
-            addOrder(currentOrder);
-        }
         setSelectedTable(table);
-
-        console.log(pendingOrders);
-        // Buscar si existe un pedido pendiente para esta mesa en pendingOrders
-        const existingPendingOrder = pendingOrders.find((order) => order.tableNumber === table.numero);
-
-        if (existingPendingOrder) {
-            // Si existe un pedido pendiente, lo restauramos
-            setCurrentOrder(existingPendingOrder);
-        } else {
-            // Si no existe un pedido, creamos uno nuevo vacío
-            const newOrder: Order = {
-                id: Date.now(),
-                tableNumber: table.numero,
-                status: 'pending',
-                created_at: new Date().toString(),
-                orderDetails: [],
-                active: true,
-                details: '',
-            };
-            setCurrentOrder(newOrder); // Actualizamos el estado de currentOrder
-            addOrder(newOrder); // Llamamos a addOrder con el nuevo pedido
-        }
+        setCurrentOrder({
+            ...currentOrder,
+            tableNumber: table.numero,
+            orderDetails: []
+        });
     };
 
-    // Función para agregar un producto al pedido
     const handleAddMenuItem = (product: Product) => {
-        setCurrentOrder((prev) => {
-            const existingOrderDetail = prev.orderDetails.find((orderDetail) => orderDetail.producto_id === product.id);
+        setCurrentOrder(prevOrder => {
+            // Check if product is already in the order
+            const existingProductIndex = prevOrder.orderDetails.findIndex(
+                item => item.producto_id === product.id
+            );
 
-            const currentQuantity = existingOrderDetail ? existingOrderDetail.cantidad : 0;
-            if (currentQuantity + 1 > product.stock) {
-                toast.error(`No hay suficiente stock para ${product.name}. Stock disponible: ${product.stock}`, {
-                    duration: 3000,
-                    position: 'top-center',
-                });
-                return prev;
-            }
-
-            if (existingOrderDetail) {
+            if (existingProductIndex >= 0) {
+                // Product already exists, increase quantity
+                const newOrderDetails = [...prevOrder.orderDetails];
+                newOrderDetails[existingProductIndex] = {
+                    ...newOrderDetails[existingProductIndex],
+                    cantidad: newOrderDetails[existingProductIndex].cantidad + 1
+                };
                 return {
-                    ...prev,
-                    orderDetails: prev.orderDetails.map((orderDetail) =>
-                        orderDetail.producto_id === product.id
-                            ? { ...orderDetail, cantidad: orderDetail.cantidad + 1 }
-                            : orderDetail,
-                    ),
+                    ...prevOrder,
+                    orderDetails: newOrderDetails
                 };
             } else {
-                const newOrderDetail: OrderDetail = {
+                // Add new product to order
+                const newDetail: OrderDetail = {
                     id: Date.now(),
-                    order_id: prev.id,
+                    order_id: prevOrder.id,
                     producto_id: product.id,
-                    cantidad: 1,
+                    cantidad: 1
                 };
-
                 return {
-                    ...prev,
-                    orderDetails: [...prev.orderDetails, newOrderDetail],
+                    ...prevOrder,
+                    orderDetails: [...prevOrder.orderDetails, newDetail]
                 };
             }
         });
     };
 
-    // Función para eliminar un producto del pedido
     const handleRemoveItem = (orderDetail: OrderDetail) => {
-        setCurrentOrder((prev) => ({
-            ...prev,
-            orderDetails: prev.orderDetails.filter((od) => od.id !== orderDetail.id),
+        setCurrentOrder(prevOrder => ({
+            ...prevOrder,
+            orderDetails: prevOrder.orderDetails.filter(item => item.id !== orderDetail.id)
         }));
     };
 
-    // Función para enviar el pedido
-    const handleSubmitOrder = () => {
-        if (!selectedTable) {
-            alert('¡Por favor selecciona una mesa primero!');
-            return;
-        }
-        addOrder(currentOrder);
-        submitOrder(currentOrder);
-        toast.success(`¡Pedido enviado correctamente para la Mesa ${selectedTable.numero}!`, {
-            duration: 3000,
-            position: 'top-center',
-            icon: '🍽️',
-            style: {
-                borderRadius: '10px',
-                background: '#333',
-                color: '#fff',
-            },
-        });
-        setCurrentOrder({
-            id: Date.now(),
-            tableNumber: 0,
-            created_at: new Date().toString(),
-            status: '',
-            orderDetails: [],
-            active: true,
-            details: '',
-        });
-        setSelectedTable(null);
-    };
-
-    // Función para calcular el total del pedido
     const calculateTotal = () => {
         return currentOrder.orderDetails
-            .reduce((total, orderDetail) => {
-                const item = menuItems.find((item) => item.id === orderDetail.producto_id);
-                return item ? total + item.price * orderDetail.cantidad : total;
+            .reduce((total, item) => {
+                const product = menuItems.find(menuItem => menuItem.id === item.producto_id);
+                return total + (product ? product.price * item.cantidad : 0);
             }, 0)
             .toFixed(2);
     };
 
-    // Función para pagar el pedido
-    const handlePayOrder = async () => {
-        if (!selectedTable) {
-            alert('¡Por favor selecciona una mesa primero!');
-            return;
-        }
+    const handleUpdateOrderDetails = (details: string) => {
+        setCurrentOrder(prevOrder => ({
+            ...prevOrder,
+            details
+        }));
+    };
+
+    const handleSubmitOrder = async () => {
+        if (!selectedTable || currentOrder.orderDetails.length === 0) return;
 
         try {
+            // Use submitOrder from the context
+            await submitOrder(currentOrder);
+
+            // Reset the current order with a new ID
+            setCurrentOrder({
+                id: Date.now(),
+                tableNumber: selectedTable.numero,
+                status: 'pending',
+                created_at: new Date().toISOString(),
+                orderDetails: [],
+                active: true,
+                details: ''
+            });
+
+            // Notify user of success
+            toast.success('Pedido enviado correctamente', {
+                duration: 3000,
+                position: 'top-center',
+                icon: '🍽️',
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                },
+            });
+        } catch (error) {
+            console.error('Error submitting order:', error);
+            toast.error('Error al enviar el pedido', {
+                duration: 3000,
+                position: 'top-center',
+            });
+        }
+    };
+
+    const handlePayOrder = async () => {
+        if (!selectedTable) return;
+        
+        try {
+            // Get token from local storage
             const token = localStorage.getItem('token');
             if (!token) {
-                throw new Error('No se encontró el token, por favor inicia sesión');
+                throw new Error('No token found, please log in');
             }
 
+            // Update all active orders for this table to inactive (mark as paid)
             const response = await axios.post(
                 `${API_URL}/orders/desactivar`,
-                {
-                    numero_mesa: selectedTable.numero,
-                },
+                { numero_mesa: selectedTable.numero },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
-                },
+                }
             );
 
             if (response.status === 200) {
-                // Limpiar el pedido actual
+                // Refresh tables after successful payment
+                await getTables();
+                
+                // Reset selected table and current order
+                setSelectedTable(null);
                 setCurrentOrder({
                     id: Date.now(),
                     tableNumber: 0,
-                    created_at: new Date().toString(),
-                    status: '',
+                    status: 'pending',
+                    created_at: new Date().toISOString(),
                     orderDetails: [],
                     active: true,
-                    details: '',
+                    details: ''
                 });
-                setSelectedTable(null);
-
-                // Actualizar el estado de las mesas
-                await getTables();
-
-                toast.success('¡Pedido pagado exitosamente!', {
+                
+                // Notify user
+                toast.success('Pago registrado y mesa liberada', {
                     duration: 3000,
                     position: 'top-center',
                     icon: '💰',
@@ -277,26 +190,18 @@ const WaiterDashboard = () => {
                 });
             }
         } catch (error) {
-            console.error('Error al pagar el pedido:', error);
-            toast.error('Error al pagar el pedido. Por favor intenta de nuevo.', {
+            console.error('Error processing payment:', error);
+            toast.error('Error al procesar el pago', {
                 duration: 3000,
                 position: 'top-center',
             });
         }
     };
 
-    const handleUpdateDetails = (details: string) => {
-        setCurrentOrder(prev => ({
-            ...prev,
-            details
-        }));
-    };
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-            {/* Toaster para mostrar notificaciones */}
             <Toaster />
-
+            
             {/* Header/Nav */}
             <nav className="bg-black/30 backdrop-blur-sm fixed w-full z-50">
                 <div className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -315,25 +220,38 @@ const WaiterDashboard = () => {
                 </div>
             </nav>
 
-            <main className="container mx-auto px-6 py-32">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-                    {/* Usamos el componente TableManagement aquí */}
-                    <TableManagement tables={tables} handleTableSelect={handleTableSelect} />
-
-                    {/* Usamos el componente MenuSection aquí */}
-                    <MenuSection menuItems={menuItems} handleAddMenuItem={handleAddMenuItem} />
-
-                    {/* Usamos el componente OrderStatus aquí */}
-                    <OrderStatus
-                        selectedTable={selectedTable}
-                        currentOrder={currentOrder}
-                        handleRemoveItem={handleRemoveItem}
-                        calculateTotal={calculateTotal}
-                        handleSubmitOrder={handleSubmitOrder}
-                        handlePayOrder={handlePayOrder}
-                        menuItems={menuItems}
-                        onUpdateDetails={handleUpdateDetails}
-                    />
+            <main className="container mx-auto px-6 py-24">
+                <div className="grid grid-cols-1 gap-8">
+                    {/* First row: Tables and Menu side by side */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Tables section - takes the left column */}
+                        <div className="h-full">
+                            <TableManagement 
+                                tables={tables} 
+                                handleTableSelect={handleTableSelect}
+                                selectedTableId={selectedTable?.id || null}
+                            />
+                        </div>
+                        
+                        {/* Menu section - takes the right column */}
+                        <div className="h-full">
+                            <MenuSection menuItems={menuItems} handleAddMenuItem={handleAddMenuItem} />
+                        </div>
+                    </div>
+                    
+                    {/* Second row: Order Details - takes full width */}
+                    <div className="col-span-1">
+                        <OrderStatus
+                            selectedTable={selectedTable}
+                            currentOrder={currentOrder}
+                            handleRemoveItem={handleRemoveItem}
+                            calculateTotal={calculateTotal}
+                            handleSubmitOrder={handleSubmitOrder}
+                            handlePayOrder={handlePayOrder}
+                            menuItems={menuItems}
+                            onUpdateDetails={handleUpdateOrderDetails}
+                        />
+                    </div>
                 </div>
             </main>
         </div>

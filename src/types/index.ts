@@ -43,3 +43,14 @@ export interface OrderDetail {
   producto_id: number;
   cantidad: number;
 }
+
+// Extended properties for Order to handle different API response formats
+export interface ExtendedOrder extends Order {
+    order_details?: OrderDetail[];
+}
+
+// Extended OrderDetail to handle embedded product information
+export interface ExtendedOrderDetail extends OrderDetail {
+    products?: Product;
+    product?: Product;
+}

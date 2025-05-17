@@ -191,3 +191,62 @@ export const getActiveOrders = async (): Promise<Order[]> => {
         return [];
     }
 };
+
+export const getTableHistoryForTodayAPI = async (tableNumber: number): Promise<Order[]> => {
+    const token = authService.getToken();
+    if (!token) {
+        throw new Error('No token found, please log in');
+    }
+
+    try {
+        console.log(`Fetching history for table ${tableNumber}`);
+        const response = await axios.get(`${API_URL}/orders/mesa/${tableNumber}/historial-hoy`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        
+        console.log(`History response for table ${tableNumber}:`, response.data);
+        
+        // The backend returns { message: string, tableNumber: number, orders: Order[] }
+        if (response.data && Array.isArray(response.data.orders)) {
+            const orders = response.data.orders;
+            
+            // Transform orderDetails if necessary for compatibility
+            const formattedOrders = orders.map(order => {
+                // Make sure orderDetails exists and is correctly formatted
+                const orderDetails = order.orderDetails || order.order_details || [];
+                
+                return {
+                    ...order,
+                    // Ensure consistent field name
+                    orderDetails: orderDetails.map(detail => ({
+                        ...detail,
+                        // Ensure pedido_id is present
+                        pedido_id: detail.pedido_id || detail.order_id || order.id
+                    }))
+                };
+            });
+            
+            console.log(`Formatted history data for table ${tableNumber}:`, formattedOrders);
+            return formattedOrders;
+        }
+        
+        // If the backend returns a response with an empty orders array
+        if (response.data && response.data.message && Array.isArray(response.data.orders)) {
+            console.log(`No history found for table ${tableNumber} (empty array in response)`);
+            return [];
+        }
+        
+        console.warn('Unexpected response structure for table history:', response.data);
+        return []; // Return empty array for unexpected structure
+    } catch (error: any) {
+        if (axios.isAxiosError(error) && error.response && error.response.status === 404) {
+            // If the API returns 404, it means no history was found, so return an empty array.
+            console.log(`No history found for table ${tableNumber} (404 response)`);
+            return [];
+        }
+        console.error(`Error fetching history for table ${tableNumber}:`, error);
+        throw error; // Re-throw other errors
+    }
+};

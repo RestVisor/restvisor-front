@@ -1,180 +1,83 @@
 import React, { useState } from 'react';
 import { Table } from '../../types';
 import { useTablesAndMenu } from '../../hooks/useTablesAndMenu';
+// Suggesting simple icons. You might use an icon library like react-icons.
+const TableIconFree = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+const TableIconOccupied = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>;
+const TableIconReserved = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+const TableIconReady = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>;
 
 interface TableManagementProps {
     tables: Table[];
     handleTableSelect: (table: Table) => void;
+    selectedTableId?: number | null; // Added to indicate selected table
 }
 
-const TableManagement: React.FC<TableManagementProps> = ({ tables, handleTableSelect }) => {
+const TableManagement: React.FC<TableManagementProps> = ({ tables, handleTableSelect, selectedTableId }) => {
     const { tablesWithReadyOrders } = useTablesAndMenu();
     const [hoveredTable, setHoveredTable] = useState<number | null>(null);
 
     return (
-        <div className="bg-gray-800/30 backdrop-blur-sm p-8 rounded-3xl border border-gray-700/50 shadow-xl">
-            <h2 className="text-xl font-semibold text-white mb-8 border-b border-gray-700/50 pb-4">Gestión de Mesas</h2>
-            <div className="grid grid-cols-3 gap-8">
+        <div className="bg-gray-800/50 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-gray-700/60 shadow-2xl">
+            <h2 className="text-2xl font-bold text-white mb-8 border-b border-gray-700/50 pb-4 tracking-tight">Gestión de Mesas</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8">
                 {tables.map((table) => {
                     const isHovered = hoveredTable === table.id;
+                    const isSelected = selectedTableId === table.id;
                     const isOccupied = table.estado === 'ocupada';
                     const isReserved = table.estado === 'reservada';
-                    const isFree = !isOccupied && !isReserved;
+                    const isFree = table.estado === 'disponible'; // Explicitly check for 'disponible'
                     const hasReadyOrders = isOccupied && tablesWithReadyOrders.includes(table.numero);
+
+                    let bgColor = 'bg-emerald-500/90';
+                    let borderColor = 'border-emerald-600/80';
+                    let textColor = 'text-emerald-300';
+                    let icon = <TableIconFree />;
+                    let statusText = table.estado;
+
+                    if (hasReadyOrders) {
+                        bgColor = 'bg-orange-500/90';
+                        borderColor = 'border-orange-600/80';
+                        textColor = 'text-orange-300';
+                        icon = <TableIconReady />;
+                        statusText = 'Pedido Listo';
+                    } else if (isOccupied) {
+                        bgColor = 'bg-rose-500/90';
+                        borderColor = 'border-rose-600/80';
+                        textColor = 'text-rose-300';
+                        icon = <TableIconOccupied />;
+                    } else if (isReserved) {
+                        bgColor = 'bg-amber-500/90';
+                        borderColor = 'border-amber-600/80';
+                        textColor = 'text-amber-300';
+                        icon = <TableIconReserved />;
+                    } // isFree will use default emerald
 
                     return (
                         <div
                             key={table.id}
-                            className="relative cursor-pointer group"
+                            className={`relative cursor-pointer group transform transition-all duration-300 ease-in-out 
+                                        ${isHovered && !isSelected ? 'scale-105 shadow-lg' : ''} 
+                                        ${isSelected ? 'scale-105 shadow-xl ring-2 ring-blue-500 ring-offset-2 ring-offset-gray-800/50 rounded-lg' : ''}`}
                             onClick={() => handleTableSelect(table)}
                             onMouseEnter={() => setHoveredTable(table.id)}
                             onMouseLeave={() => setHoveredTable(null)}
                         >
-                            <div className="flex flex-col items-center">
-                                {/* Contenedor de la mesa con sombra */}
-                                <div
-                                    className={`relative transition-all duration-300 ${isHovered ? 'transform -translate-y-1' : ''
-                                        }`}
-                                >
-                                    {/* Mesa Superior - Diseño Flat/Minimal */}
-                                    <div
-                                        className={`
-                                        w-24 h-24 
-                                        rounded-md
-                                        flex items-center justify-center
-                                        transition-all duration-300
-                                        border-2
-                                        ${hasReadyOrders
-                                                ? 'bg-orange-500/90 border-orange-600/80 animate-pulse'
-                                                : isOccupied
-                                                    ? 'bg-rose-500/90 border-rose-600/80'
-                                                    : isReserved
-                                                        ? 'bg-amber-500/90 border-amber-600/80'
-                                                        : 'bg-emerald-500/90 border-emerald-600/80'
-                                            }
-                                        ${isHovered ? 'shadow-lg shadow-black/20' : 'shadow-md shadow-black/10'}
-                                    `}
-                                    >
-                                        {/* Indicadores de uso en la mesa */}
-                                        <div className="absolute inset-0 overflow-hidden">
-                                            {/* Círculos decorativos para mesa ocupada */}
-                                            {isOccupied && !hasReadyOrders && (
-                                                <>
-                                                    <div className="absolute w-6 h-6 rounded-full border-2 border-white/30 top-2 left-2"></div>
-                                                    <div className="absolute w-5 h-5 rounded-full border-2 border-white/30 bottom-3 right-3"></div>
-                                                </>
-                                            )}
-
-                                            {/* Líneas para mesa reservada */}
-                                            {isReserved && (
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <div className="w-12 h-px bg-white/40"></div>
-                                                    <div className="h-12 w-px bg-white/40"></div>
-                                                </div>
-                                            )}
-
-                                            {/* Patrón para mesa libre */}
-                                            {isFree && (
-                                                <div className="absolute inset-0 flex items-center justify-center opacity-30">
-                                                    <div className="w-16 h-16 border-2 border-white/40 rounded-sm transform rotate-45"></div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Número de mesa */}
-                                        <span
-                                            className={`
-                                            text-white font-medium text-lg
-                                            z-10 relative
-                                            transition-all duration-300
-                                            ${isHovered ? 'text-shadow shadow-black/50' : ''}
-                                        `}
-                                        >
-                                            {table.numero}
-                                        </span>
-                                    </div>
-
-                                    {/* Sombra debajo de la mesa */}
-                                    <div
-                                        className={`
-                                        absolute -bottom-1 left-1/2 transform -translate-x-1/2
-                                        w-20 h-1.5 rounded-full
-                                        transition-all duration-300
-                                        ${hasReadyOrders
-                                                ? 'bg-orange-900/40'
-                                                : isOccupied
-                                                    ? 'bg-rose-900/40'
-                                                    : isReserved
-                                                        ? 'bg-amber-900/40'
-                                                        : 'bg-emerald-900/40'
-                                            }
-                                        ${isHovered ? 'blur-sm w-16 opacity-70' : 'blur-[2px] opacity-50'}
-                                    `}
-                                    ></div>
+                            <div className={`flex flex-col items-center p-4 rounded-lg border-2 ${borderColor} ${bgColor} ${hasReadyOrders ? 'animate-pulse' : ''} transition-all duration-300`}>
+                                <div className="mb-2 text-white">
+                                    {icon}
                                 </div>
-
-                                {/* Información de estado */}
-                                <div
-                                    className={`
-                                    mt-4 
-                                    text-xs uppercase 
-                                    tracking-wider 
-                                    font-medium
-                                    transition-all duration-300
-                                    ${isHovered ? 'opacity-100' : 'opacity-80'}
-                                    ${hasReadyOrders
-                                            ? 'text-orange-300'
-                                            : isOccupied
-                                                ? 'text-rose-300'
-                                                : isReserved
-                                                    ? 'text-amber-300'
-                                                    : 'text-emerald-300'
-                                        }
-                                `}
-                                >
-                                    {hasReadyOrders ? 'Pedido Listo' : table.estado}
-                                </div>
-
-                                {/* Barra de estado - visible solo en hover */}
-                                <div
-                                    className={`
-                                    w-12 h-0.5 mt-1.5
-                                    transition-all duration-300
-                                    ${isHovered ? 'opacity-100' : 'opacity-0'}
-                                    ${hasReadyOrders
-                                            ? 'bg-orange-500'
-                                            : isOccupied
-                                                ? 'bg-rose-500'
-                                                : isReserved
-                                                    ? 'bg-amber-500'
-                                                    : 'bg-emerald-500'
-                                        }
-                                `}
-                                ></div>
+                                <span className="text-white font-bold text-2xl mb-1">
+                                    {table.numero}
+                                </span>
+                                <span className={`text-xs uppercase font-semibold tracking-wider ${textColor}`}>
+                                    {statusText}
+                                </span>
                             </div>
-
-                            {/* Círculo de selección - aparece en hover */}
-                            <div
-                                className={`
-                                absolute -top-1 -right-1
-                                w-5 h-5
-                                rounded-full
-                                flex items-center justify-center
-                                transform scale-0
-                                transition-all duration-200
-                                ${isHovered ? 'scale-100' : ''}
-                                ${hasReadyOrders
-                                        ? 'bg-orange-700'
-                                        : isOccupied
-                                            ? 'bg-rose-700'
-                                            : isReserved
-                                                ? 'bg-amber-700'
-                                                : 'bg-emerald-700'
-                                    }
-                            `}
-                            >
-                                <span className="text-white text-xs font-bold">+</span>
-                            </div>
+                            {/* Optional: Add a small visual cue for hover when not selected */}
+                            {isHovered && !isSelected && (
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full opacity-75"></div>
+                            )}
                         </div>
                     );
                 })}
