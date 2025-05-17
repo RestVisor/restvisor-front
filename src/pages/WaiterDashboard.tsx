@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import TableManagement from '../components/waiter/TableManagement';
 import MenuSection from '../components/waiter/MenuSection';
 import OrderStatus from '../components/waiter/OrderStatus';
+import TableMapModal from '../components/waiter/TableMapModal';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -25,6 +26,7 @@ const WaiterDashboard: React.FC = () => {
     } = useTablesAndMenu();
 
     const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+    const [isMapModalOpen, setIsMapModalOpen] = useState(false);
     const [currentOrder, setCurrentOrder] = useState<Order>({
         id: Date.now(),
         tableNumber: 0,
@@ -42,6 +44,11 @@ const WaiterDashboard: React.FC = () => {
             tableNumber: table.numero,
             orderDetails: []
         });
+        
+        // Close the map modal if it's open when a table is selected
+        if (isMapModalOpen) {
+            setIsMapModalOpen(false);
+        }
     };
 
     const handleAddMenuItem = (product: Product) => {
@@ -209,6 +216,15 @@ const WaiterDashboard: React.FC = () => {
                         Panel <span className="text-blue-400">Servicio de Mesa</span>
                     </h1>
                     <div className="flex items-center space-x-4">
+                        <button
+                            onClick={() => setIsMapModalOpen(true)}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 flex items-center"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+                            </svg>
+                            Mapa
+                        </button>
                         <span className="text-gray-300">Bienvenido, {user?.name}</span>
                         <button
                             onClick={logout}
@@ -254,6 +270,16 @@ const WaiterDashboard: React.FC = () => {
                     </div>
                 </div>
             </main>
+            
+            {/* Table Map Modal */}
+            <TableMapModal 
+                isOpen={isMapModalOpen}
+                onClose={() => setIsMapModalOpen(false)}
+                tables={tables}
+                onTableSelect={handleTableSelect}
+                selectedTableId={selectedTable?.id || null}
+                tablesWithReadyOrders={tablesWithReadyOrders}
+            />
         </div>
     );
 };
