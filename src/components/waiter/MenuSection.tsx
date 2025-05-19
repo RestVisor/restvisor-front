@@ -87,6 +87,43 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
         }
     };
 
+    // Helper function to get stock level styles
+    const getStockStyles = (stockLevel: number) => {
+        if (stockLevel <= 0) {
+            return {
+                bgGradient: 'from-red-950/40 to-red-900/20',
+                border: 'border-red-800/40',
+                cursor: 'cursor-not-allowed opacity-70',
+                color: 'text-red-500',
+                badge: 'bg-red-600'
+            };
+        } else if (stockLevel < 3) { 
+            return {
+                bgGradient: 'from-gray-700/40 to-gray-800/60',
+                border: 'border-amber-600/40',
+                cursor: 'cursor-pointer hover:border-blue-500/50 hover:from-blue-900/30 hover:to-blue-800/20',
+                color: 'text-amber-500',
+                badge: 'bg-amber-500'
+            };
+        } else if (stockLevel < 5) {
+            return {
+                bgGradient: 'from-gray-700/40 to-gray-800/60',
+                border: 'border-yellow-600/30',
+                cursor: 'cursor-pointer hover:border-blue-500/50 hover:from-blue-900/30 hover:to-blue-800/20',
+                color: 'text-yellow-500',
+                badge: 'bg-yellow-500/90'
+            };
+        } else {
+            return {
+                bgGradient: 'from-gray-700/40 to-gray-800/60',
+                border: 'border-gray-600/30',
+                cursor: 'cursor-pointer hover:border-blue-500/50 hover:from-blue-900/30 hover:to-blue-800/20',
+                color: 'text-gray-400',
+                badge: 'bg-emerald-500/80'
+            };
+        }
+    };
+
     return (
         <div className="bg-gray-800/80 backdrop-blur-md rounded-xl border border-gray-700/60 shadow-xl overflow-hidden h-full flex flex-col">
             {/* Header with Search */}
@@ -153,18 +190,17 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
                 )}
                 
                 {filteredItems.map((item) => {
-                    const isOutOfStock = productsStock[item.id] === 0;
-                    const isLowStock = productsStock[item.id] > 0 && productsStock[item.id] < 5;
+                    const stockLevel = productsStock[item.id] || 0;
+                    const isOutOfStock = stockLevel === 0;
+                    const stockStyles = getStockStyles(stockLevel);
                     
                     return (
                         <div
                             key={item.id}
                             onClick={() => handleItemClick(item)}
                             className={`relative overflow-hidden group rounded-lg transition-all duration-200 ${
-                                isOutOfStock 
-                                    ? 'bg-gradient-to-br from-red-950/40 to-red-900/20 border border-red-800/40 cursor-not-allowed opacity-70'
-                                    : 'bg-gradient-to-br from-gray-700/40 to-gray-800/60 border border-gray-600/30 cursor-pointer hover:border-blue-500/50 hover:from-blue-900/30 hover:to-blue-800/20'
-                            } p-2 flex flex-col justify-between`}
+                                stockStyles.bgGradient
+                            } border ${stockStyles.border} ${stockStyles.cursor} p-2 flex flex-col justify-between`}
                         >
                             {/* Product Name & Price */}
                             <div>
@@ -189,13 +225,22 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
                                 )}
                             </div>
                             
-                            {/* Stock Indicator */}
-                            {(isOutOfStock || isLowStock) && (
-                                <span className={`absolute top-0 right-0 w-0 h-0
-                                    border-t-[20px] ${isOutOfStock ? 'border-t-red-600' : 'border-t-amber-500'}
-                                    border-l-[20px] border-l-transparent`}>
+                            {/* Enhanced Stock Indicator */}
+                            <div className="absolute top-0 right-0 flex items-center">
+                                {/* Stock Badge */}
+                                <span className={`flex items-center justify-center ${stockStyles.badge} text-white text-xs px-1.5 py-0.5 rounded-bl-md font-medium`}>
+                                    {isOutOfStock ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 mr-0.5">
+                                            <path fillRule="evenodd" d="M4.5 2A2.5 2.5 0 002 4.5v11A2.5 2.5 0 004.5 18h11a2.5 2.5 0 002.5-2.5v-11A2.5 2.5 0 0016.5 2h-11zM10 7a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 7zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 mr-0.5">
+                                            <path d="M1 1.75A.75.75 0 011.75 1h1.628a1.75 1.75 0 011.734 1.51L5.18 3a65.25 65.25 0 0113.36 1.412.75.75 0 01.58.875 48.645 48.645 0 01-1.618 6.2.75.75 0 01-.712.513H6a2.503 2.503 0 00-2.292 1.5H17.25a.75.75 0 010 1.5H2.76a.75.75 0 01-.748-.807 4.002 4.002 0 012.716-3.486L3.626 2.716a.25.25 0 00-.248-.216H1.75A.75.75 0 011 1.75zM6 17.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15.5 19a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                                        </svg>
+                                    )}
+                                    {isOutOfStock ? 'Sin stock' : stockLevel}
                                 </span>
-                            )}
+                            </div>
                             
                             {/* Add item animation */}
                             <div className="absolute inset-0 bg-blue-500/20 pointer-events-none opacity-0 
