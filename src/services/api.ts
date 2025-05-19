@@ -289,3 +289,36 @@ export const updateOrdersToDelivered = async (tableNumber: number): Promise<bool
         return false; // Failed to update orders
     }
 };
+
+export const getAllOrdersWithDetailsAPI = async (
+    filters?: { status?: string; tableNumber?: number; startDate?: string; endDate?: string }
+) => {
+    const token = authService.getToken();
+    if (!token) {
+        throw new Error('No token found, please log in');
+    }
+
+    try {
+        // Construct query parameters if filters are provided
+        let queryParams = '';
+        if (filters) {
+            const params = new URLSearchParams();
+            if (filters.status) params.append('status', filters.status);
+            if (filters.tableNumber) params.append('tableNumber', filters.tableNumber.toString());
+            if (filters.startDate) params.append('startDate', filters.startDate);
+            if (filters.endDate) params.append('endDate', filters.endDate);
+            queryParams = params.toString() ? `?${params.toString()}` : '';
+        }
+
+        const response = await axios.get(`${API_URL}/orders/details${queryParams}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching orders with details:', error);
+        throw error;
+    }
+};

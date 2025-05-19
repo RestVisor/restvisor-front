@@ -1,6 +1,8 @@
 import { useAuth } from '../hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { generateReceiptPDF } from '../utils/receiptGenerator';
+import { getAllOrdersWithDetailsAPI } from '../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -38,7 +40,26 @@ interface StockMovement {
     date: string;
 }
 
-type TabType = 'users' | 'tables' | 'products' | 'stock';
+// Define interfaces for order history
+interface OrderDetail {
+    id: number;
+    pedido_id: number;
+    producto_id: number;
+    cantidad: number;
+    products?: Product;
+}
+
+interface Order {
+    id: number;
+    tableNumber: number;
+    created_at: string;
+    status: string;
+    active: boolean;
+    details?: string;
+    order_details: OrderDetail[];
+}
+
+type TabType = 'users' | 'tables' | 'products' | 'stock' | 'orders';
 type EditingItem = User | Table | Product | StockMovement | null;
 
 const AdminDashboard = () => {
@@ -48,6 +69,9 @@ const AdminDashboard = () => {
     const [tables, setTables] = useState<Table[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
     const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+    const [orderStatusFilter, setOrderStatusFilter] = useState<string>('');
     const [editingItem, setEditingItem] = useState<EditingItem>(null);
 
     const {
@@ -76,7 +100,6 @@ const AdminDashboard = () => {
         register: registerStockMovement,
         handleSubmit: handleSubmitStockMovement,
         reset: resetStockMovement,
-        setValue: setStockMovementValue,
         formState: { errors: stockErrors },
     } = useForm<StockMovement & { productId: number }>();
 
@@ -120,6 +143,21 @@ const AdminDashboard = () => {
                         const mockData: StockMovement[] = [];
                         setStockMovements(mockData);
                     }
+                }
+            } else if (activeTab === 'orders') {
+                // Fetch all orders for the orders history tab
+                setIsLoadingOrders(true);
+                try {
+                    console.log('Fetching orders with filter:', orderStatusFilter);
+                    // Use the new API function with filters if status filter is set
+                    const filters = orderStatusFilter ? { status: orderStatusFilter } : undefined;
+                    const data = await getAllOrdersWithDetailsAPI(filters);
+                    console.log('Received orders:', data);
+                    setOrders(data);
+                } catch (error) {
+                    console.error('Error fetching orders:', error);
+                } finally {
+                    setIsLoadingOrders(false);
                 }
             }
         } catch (error) {
@@ -321,7 +359,7 @@ const AdminDashboard = () => {
                         <div>
                             <label className="block text-gray-300">Email/Nif</label>
                             <input
-                                type="email"
+                                type="text"
                                 {...registerUser('email', { required: 'El email/nif es obligatorio' })}
                                 className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                             />
@@ -557,9 +595,61 @@ const AdminDashboard = () => {
                         </div>
                     </form>
                 );
+            case 'orders':
+                return <h3 className="text-lg font-medium text-white mb-4">Historial de Pedidos</h3>; // No form needed for orders tab
             default:
                 return null;
         }
+    };
+
+    // Handle downloading receipt for an order
+    const handleDownloadReceipt = (order: Order) => {
+        // Get the order details
+        const orderItems = order.order_details || [];
+        
+        // Calculate the total amount
+        const totalAmount = orderItems.reduce((sum, detail) => {
+            const product = products.find(p => p.id === detail.producto_id);
+            const price = detail.products?.price || product?.price || 0;
+            return sum + (price * detail.cantidad);
+        }, 0).toFixed(2);
+        
+        // Generate the PDF receipt
+        const receiptUrl = generateReceiptPDF(
+            order.tableNumber, 
+            orderItems.map(detail => ({
+                id: detail.id,
+                order_id: order.id,
+                producto_id: detail.producto_id,
+                cantidad: detail.cantidad
+            })),
+            products,
+            totalAmount
+        );
+        
+        // Create a download link
+        const downloadLink = document.createElement('a');
+        downloadLink.href = receiptUrl;
+        downloadLink.download = `ticket-mesa-${order.tableNumber}-${new Date(order.created_at).getTime()}.pdf`;
+        
+        // Trigger the download
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        // Revoke the blob URL to free up memory
+        setTimeout(() => URL.revokeObjectURL(receiptUrl), 100);
+    };
+
+    // Update to handle status filter change
+    const handleStatusFilterChange = (status: string) => {
+        setOrderStatusFilter(status);
+        // Fetch data with the updated filter after state has been set
+        setTimeout(() => {
+            if (activeTab === 'orders') {
+                fetchData();
+            }
+        }, 0);
     };
 
     const renderList = () => {
@@ -818,6 +908,92 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 );
+            case 'orders':
+                return (
+                    <div>
+                        
+                        {isLoadingOrders ? (
+                            <div className="flex justify-center items-center py-10">
+                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                            </div>
+                        ) : orders.length === 0 ? (
+                            <div className="text-center py-8 text-gray-400">
+                                No se encontraron pedidos en el sistema.
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+
+                                {/* Orders list */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {orders.map((order) => (
+                                        <div 
+                                            key={order.id} 
+                                            className="bg-gray-800/60 rounded-lg p-4 border border-gray-700/40 hover:border-blue-500/40 transition-colors"
+                                        >
+                                            <div className="flex justify-between items-center mb-3">
+                                                <div>
+                                                    <span className="bg-blue-600/50 text-blue-200 text-xs font-medium px-2 py-1 rounded-full">
+                                                        Mesa {order.tableNumber}
+                                                    </span>
+                                                </div>
+                                                <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${
+                                                    order.status === 'pagado' ? 'bg-green-600/40 text-green-200' :
+                                                    order.status === 'entregado' ? 'bg-blue-600/40 text-blue-200' :
+                                                    order.status === 'listo' ? 'bg-yellow-600/40 text-yellow-200' :
+                                                    order.status === 'en preparación' ? 'bg-orange-600/40 text-orange-200' :
+                                                    'bg-gray-600/40 text-gray-200'
+                                                }`}>
+                                                    {order.status}
+                                                </span>
+                                            </div>
+                                            
+                                            <div className="text-xs text-gray-300 mb-2">
+                                                {new Date(order.created_at).toLocaleDateString()} {' '}
+                                                {new Date(order.created_at).toLocaleTimeString()}
+                                            </div>
+                                            
+                                            <div className="mb-3">
+                                                <h4 className="text-sm font-medium text-white mb-1">Detalles:</h4>
+                                                <ul className="max-h-32 overflow-y-auto text-sm bg-gray-900/50 rounded-md p-2">
+                                                    {order.order_details && order.order_details.map((detail) => {
+                                                        const product = products.find(p => p.id === detail.producto_id) || 
+                                                                       detail.products;
+                                                        const productName = product?.name || 'Producto desconocido';
+                                                        return (
+                                                            <li key={detail.id} className="flex justify-between py-1 border-b border-gray-700/50">
+                                                                <span className="text-gray-200">{productName} x{detail.cantidad}</span>
+                                                                <span className="text-gray-200 font-medium">${((product?.price || 0) * detail.cantidad).toFixed(2)}</span>
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
+                                            </div>
+                                            
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-white font-medium">
+                                                    Total: ${order.order_details?.reduce((sum, detail) => {
+                                                        const product = products.find(p => p.id === detail.producto_id) || 
+                                                                       detail.products;
+                                                        return sum + ((product?.price || 0) * detail.cantidad);
+                                                    }, 0).toFixed(2) || '0.00'}
+                                                </span>
+                                                <button
+                                                    onClick={() => handleDownloadReceipt(order)}
+                                                    className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 rounded flex items-center"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 mr-1">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                                    </svg>
+                                                    Descargar Ticket
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
             default:
                 return null;
         }
@@ -883,14 +1059,23 @@ const AdminDashboard = () => {
                             >
                                 Inventario
                             </button>
+                            <button
+                                onClick={() => setActiveTab('orders')}
+                                className={`${activeTab === 'orders'
+                                        ? 'border-blue-400 text-blue-400'
+                                        : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
+                                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200`}
+                            >
+                                Pedidos
+                            </button>
                         </nav>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-1 bg-black/30 backdrop-blur-sm p-6 rounded-lg shadow-xl">
+                    <div className={`lg:col-span-1 bg-black/30 backdrop-blur-sm p-6 rounded-lg shadow-xl ${activeTab === 'orders' ? 'hidden lg:block' : ''}`}>
                         <h2 className="text-xl font-semibold mb-4 text-white">
-                            {editingItem
+                            {activeTab === 'orders' ? '' : editingItem
                                 ? `Editar ${activeTab === 'users'
                                     ? 'Usuario'
                                     : activeTab === 'tables'
@@ -910,7 +1095,7 @@ const AdminDashboard = () => {
                         </h2>
                         <div className="text-gray-300">{renderForm()}</div>
                     </div>
-                    <div className="lg:col-span-2 bg-black/30 backdrop-blur-sm p-6 rounded-lg shadow-xl">
+                    <div className={`${activeTab === 'orders' ? 'lg:col-span-3' : 'lg:col-span-2'} bg-black/30 backdrop-blur-sm p-6 rounded-lg shadow-xl`}>
                         <h2 className="text-xl font-semibold mb-4 text-white">
                             {activeTab === 'users'
                                 ? 'Lista de Usuarios'
@@ -918,7 +1103,9 @@ const AdminDashboard = () => {
                                     ? 'Lista de Mesas'
                                     : activeTab === 'products'
                                         ? 'Lista de Productos'
-                                        : 'Historial de Inventario'}
+                                        : activeTab === 'stock'
+                                            ? 'Historial de Inventario'
+                                            : ''}
                         </h2>
                         {renderList()}
                     </div>
