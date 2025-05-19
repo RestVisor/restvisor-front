@@ -57,7 +57,7 @@ export function LoginForm() {
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     disabled={loading}
-                                    placeholder="Enter your email"
+                                    placeholder="Email/NIF"
                                 />
                                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-200 pointer-events-none"></div>
                             </div>
@@ -73,7 +73,7 @@ export function LoginForm() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     disabled={loading}
-                                    placeholder="Enter your password"
+                                    placeholder="Contraseña"
                                 />
                                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-200 pointer-events-none"></div>
                             </div>

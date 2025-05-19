@@ -319,10 +319,10 @@ const AdminDashboard = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-300">Email</label>
+                            <label className="block text-gray-300">Email/Nif</label>
                             <input
                                 type="email"
-                                {...registerUser('email', { required: 'El email es obligatorio' })}
+                                {...registerUser('email', { required: 'El email/nif es obligatorio' })}
                                 className="w-full p-2 bg-gray-800/50 border border-gray-700 rounded-lg mt-1 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                             />
                         </div>
