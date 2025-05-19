@@ -24,16 +24,27 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
   const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
   const [tablesWithReadyOrders, setTablesWithReadyOrders] = useState<number[]>([]);
+  const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
 
+  // Initial data load
   useEffect(() => {
     getTables();
     getMenuItems();
   }, []);
 
-  // Efecto para verificar periódicamente los pedidos activos
+  // Real-time data synchronization effect
   useEffect(() => {
-    const checkActiveOrders = async () => {
+    const syncData = async () => {
       try {
+        console.log(`Syncing data at ${new Date().toLocaleTimeString()}`);
+        
+        // Get current state of tables
+        await getTables();
+        
+        // Get menu items (to refresh stock levels)
+        await getMenuItems();
+        
+        // Get active orders and determine which tables have ready orders
         const orders = await getActiveOrders();
         const readyOrders = orders.filter(order =>
           order.active && order.status === 'listo'
@@ -41,17 +52,24 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
 
         const tablesWithReady = readyOrders.map(order => order.tableNumber);
         setTablesWithReadyOrders(tablesWithReady);
+        
+        // Update active orders state
+        setActiveOrders(orders);
+        
+        // Update last sync time
+        setLastSyncTime(new Date());
       } catch (error) {
-        console.error('Error checking active orders:', error);
+        console.error('Error syncing data:', error);
       }
     };
 
-    // Verificar inmediatamente
-    checkActiveOrders();
+    // Sync immediately on component mount
+    syncData();
 
-    // Configurar el intervalo para verificar cada 5 segundos
-    const intervalId = setInterval(checkActiveOrders, 10000);
+    // Configure interval to sync every 5 seconds
+    const intervalId = setInterval(syncData, 5000);
 
+    // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
   }, []);
 
