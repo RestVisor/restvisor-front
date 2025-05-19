@@ -113,6 +113,14 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
                 color: 'text-yellow-500',
                 badge: 'bg-yellow-500/90'
             };
+        } else if (stockLevel < 10) {
+            return {
+                bgGradient: 'from-orange-800/30 to-orange-900/20',
+                border: 'border-orange-600/30',
+                cursor: 'cursor-pointer hover:border-blue-500/50 hover:from-blue-900/30 hover:to-blue-800/20',
+                color: 'text-orange-400',
+                badge: 'bg-orange-500/80'
+            };
         } else {
             return {
                 bgGradient: 'from-gray-700/40 to-gray-800/60',
@@ -252,7 +260,7 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
             </div>
             
             {/* Custom CSS */}
-            <style jsx>{`
+            <style>{`
                 .hide-scrollbar::-webkit-scrollbar {
                     display: none;
                 }
