@@ -13,6 +13,7 @@ interface TablesAndMenuContextType {
   submitOrder: (order: Order) => void;
   setActiveOrders: React.Dispatch<React.SetStateAction<Order[]>>;
   tablesWithReadyOrders: number[];
+  tableTotalOrder: Order | null;
 }
 
 const TablesAndMenuContext = createContext<TablesAndMenuContextType | null>(null);
@@ -25,6 +26,7 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
   const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
   const [tablesWithReadyOrders, setTablesWithReadyOrders] = useState<number[]>([]);
   const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
+  const [tableTotalOrder, setTableTotalOrder] = useState<Order | null>(null);
 
   // Initial data load
   useEffect(() => {
@@ -165,6 +167,7 @@ export const TablesAndMenuProvider = ({ children }: { children: React.ReactNode 
         submitOrder,
         setActiveOrders,
         tablesWithReadyOrders,
+        tableTotalOrder
       }}
     >
       {children}

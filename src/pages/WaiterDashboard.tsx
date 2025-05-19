@@ -33,6 +33,7 @@ const WaiterDashboard: React.FC = () => {
         active: true,
         details: ''
     });
+    const [tableTotalOrder, setTableTotalOrder] = useState<Order | null>(null);
 
     const handleTableSelect = async (table: Table) => {
         setSelectedTable(table);
@@ -318,6 +319,7 @@ const WaiterDashboard: React.FC = () => {
                                 handlePayOrder={handlePayOrder}
                                 menuItems={menuItems}
                                 onUpdateDetails={handleUpdateOrderDetails}
+                                setTableTotalOrder={setTableTotalOrder}
                             />
                         </div>
                     </div>

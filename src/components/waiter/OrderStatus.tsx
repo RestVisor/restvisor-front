@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Order, OrderDetail, Product, ExtendedOrder, ExtendedOrderDetail } from '../../types';
 import { getActiveOrdersByTable, getTableHistoryForTodayAPI } from '../../services/api';
+import { generateReceiptPDF } from '../../utils/receiptGenerator';
 
 interface OrderStatusProps {
     selectedTable: { numero: number } | null;
@@ -11,6 +12,7 @@ interface OrderStatusProps {
     handlePayOrder: () => Promise<void>;
     menuItems: Product[];
     onUpdateDetails?: (details: string) => void;
+    setTableTotalOrder: React.Dispatch<React.SetStateAction<Order | null>>;
 }
 
 interface HistoryModalProps {
@@ -22,6 +24,43 @@ interface HistoryModalProps {
 
 const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, history, menuItems }) => {
     if (!isOpen) return null;
+
+    const handleDownloadReceipt = (order: ExtendedOrder) => {
+        // Determine which property has the order details 
+        const orderItems = order.orderDetails || order.order_details || [];
+        
+        // Calculate the total amount
+        const totalAmount = orderItems.reduce((sum, detail: OrderDetail | ExtendedOrderDetail) => {
+            const productId = detail.producto_id;
+            const extendedDetail = detail as ExtendedOrderDetail;
+            const productFromDetail = extendedDetail.products || extendedDetail.product || null;
+            const productPrice = productFromDetail?.price || 
+                menuItems.find(item => item.id === productId)?.price || 
+                0;
+            return sum + (productPrice * detail.cantidad);
+        }, 0).toFixed(2);
+        
+        // Generate the PDF receipt
+        const receiptUrl = generateReceiptPDF(
+            order.tableNumber, 
+            orderItems as OrderDetail[],
+            menuItems,
+            totalAmount
+        );
+        
+        // Create a download link
+        const downloadLink = document.createElement('a');
+        downloadLink.href = receiptUrl;
+        downloadLink.download = `ticket-mesa-${order.tableNumber}-${new Date().getTime()}.pdf`;
+        
+        // Trigger the download
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        // Revoke the blob URL to free up memory
+        setTimeout(() => URL.revokeObjectURL(receiptUrl), 100);
+    };
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -124,21 +163,32 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, history, m
                                             );
                                         })}
                                     </ul>
-                                    <p className="text-right font-semibold text-white text-md border-t border-gray-600/70 pt-1.5 mt-1.5">
-                                        Total: $
-                                        {orderItems.reduce((sum, detail: OrderDetail | ExtendedOrderDetail) => {
-                                            const productId = detail.producto_id;
-                                            
-                                            // Check if product info is embedded in the detail
-                                            const extendedDetail = detail as ExtendedOrderDetail;
-                                            const productFromDetail = extendedDetail.products || extendedDetail.product || null;
-                                            
-                                            const productPrice = productFromDetail?.price || 
-                                                menuItems.find(item => item.id === productId)?.price || 
-                                                0;
-                                            return sum + (productPrice * detail.cantidad);
-                                        }, 0).toFixed(2)}
-                                    </p>
+                                    <div className="flex justify-between items-center border-t border-gray-600/70 pt-1.5 mt-1.5">
+                                        <button
+                                            onClick={() => handleDownloadReceipt(order)}
+                                            className="bg-teal-600 hover:bg-teal-700 text-white text-xs px-2 py-1 rounded flex items-center"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 mr-1">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                            </svg>
+                                            Ticket
+                                        </button>
+                                        <p className="text-right font-semibold text-white text-md">
+                                            Total: $
+                                            {orderItems.reduce((sum, detail: OrderDetail | ExtendedOrderDetail) => {
+                                                const productId = detail.producto_id;
+                                                
+                                                // Check if product info is embedded in the detail
+                                                const extendedDetail = detail as ExtendedOrderDetail;
+                                                const productFromDetail = extendedDetail.products || extendedDetail.product || null;
+                                                
+                                                const productPrice = productFromDetail?.price || 
+                                                    menuItems.find(item => item.id === productId)?.price || 
+                                                    0;
+                                                return sum + (productPrice * detail.cantidad);
+                                            }, 0).toFixed(2)}
+                                        </p>
+                                    </div>
                                     {order.details && (
                                         <p className="text-xs text-gray-400/80 mt-1 pt-1 border-t border-gray-600/50 italic">
                                             <span className="not-italic font-medium">Notas:</span> {order.details}
@@ -171,13 +221,14 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
     handlePayOrder,
     menuItems,
     onUpdateDetails,
+    setTableTotalOrder,
 }) => {
-    const [tableTotalOrder, setTableTotalOrder] = useState<Order | null>(null);
     const [isEditingDetails, setIsEditingDetails] = useState(false);
     const [details, setDetails] = useState(currentOrder.details || '');
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
     const [tableHistory, setTableHistory] = useState<ExtendedOrder[]>([]);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+    const [localTableTotalOrder, setLocalTableTotalOrder] = useState<Order | null>(null);
 
     useEffect(() => {
         setDetails(currentOrder.details || '');
@@ -189,21 +240,25 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
                 try {
                     const totalOrder = await getActiveOrdersByTable(selectedTable.numero);
                     if (totalOrder && totalOrder.orderDetails && totalOrder.orderDetails.length > 0) {
+                        setLocalTableTotalOrder(totalOrder);
                         setTableTotalOrder(totalOrder);
                     } else {
+                        setLocalTableTotalOrder(null);
                         setTableTotalOrder(null);
                     }
                 } catch (error) {
                     console.error('Error fetching table total:', error);
+                    setLocalTableTotalOrder(null);
                     setTableTotalOrder(null);
                 }
             } else {
+                setLocalTableTotalOrder(null);
                 setTableTotalOrder(null);
             }
         };
 
         fetchTableTotal();
-    }, [selectedTable]);
+    }, [selectedTable, setTableTotalOrder]);
 
     const handleDetailsSubmit = () => {
         if (onUpdateDetails) {
@@ -383,7 +438,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
                             </div>
 
                             {/* Table Total Section (when present) */}
-                            {tableTotalOrder && tableTotalOrder.orderDetails && tableTotalOrder.orderDetails.length > 0 && (
+                            {localTableTotalOrder && localTableTotalOrder.orderDetails && localTableTotalOrder.orderDetails.length > 0 && (
                                 <div className="mt-6 border-t border-gray-700/50 pt-4 space-y-3">
                                     <h3 className="text-md text-white font-medium flex items-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 mr-1.5 text-green-400">
@@ -395,7 +450,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
                                     <div className="bg-gray-700/30 rounded-lg p-3 border border-gray-600/30 space-y-2">
                                         {/* Items List */}
                                         <ul className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                                            {tableTotalOrder.orderDetails.map((detail: OrderDetail) => {
+                                            {localTableTotalOrder.orderDetails.map((detail: OrderDetail) => {
                                                 const product = menuItems.find(item => item.id === detail.producto_id);
                                                 const itemTotal = (product?.price || 0) * detail.cantidad;
                                                 
@@ -417,7 +472,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
                                         <div className="flex justify-between items-center border-t border-gray-600/50 pt-2 text-lg font-semibold text-white">
                                             <span className="text-gray-300 text-sm">Total Mesa:</span>
                                             <span>${
-                                                tableTotalOrder.orderDetails
+                                                localTableTotalOrder.orderDetails
                                                     .reduce((sum: number, detail: OrderDetail) => {
                                                         const product = menuItems.find(item => item.id === detail.producto_id);
                                                         return sum + (product ? product.price * detail.cantidad : 0);
