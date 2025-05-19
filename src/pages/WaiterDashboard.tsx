@@ -78,6 +78,30 @@ const WaiterDashboard: React.FC = () => {
     };
 
     const handleAddMenuItem = (product: Product) => {
+        // Get the current stock for this product from the MenuSection component via menuItems
+        const currentStock = menuItems.find(item => item.id === product.id)?.stock || 0;
+        
+        // Calculate how many of this product are already in the current order
+        const currentlyInOrder = currentOrder.orderDetails
+            .filter(item => item.producto_id === product.id)
+            .reduce((acc, item) => acc + item.cantidad, 0);
+            
+        // Check if adding one more would exceed the available stock
+        if (currentlyInOrder + 1 > currentStock) {
+            // Show toast notification for insufficient stock
+            toast.error(`No hay suficiente stock para ${product.name}. Disponible: ${currentStock}`, {
+                duration: 3000,
+                position: 'top-center',
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                },
+            });
+            return; // Don't proceed with adding the item
+        }
+        
+        // If we have enough stock, proceed with adding the item
         setCurrentOrder(prevOrder => {
             // Check if product is already in the order
             const existingProductIndex = prevOrder.orderDetails.findIndex(

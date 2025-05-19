@@ -82,9 +82,7 @@ const MenuSection: React.FC<MenuSectionProps> = ({ menuItems, handleAddMenuItem 
     }, [menuItems]);
 
     const handleItemClick = (product: Product) => {
-        if (productsStock[product.id] > 0) {
-            handleAddMenuItem(product);
-        }
+        handleAddMenuItem(product);
     };
 
     // Helper function to get stock level styles
