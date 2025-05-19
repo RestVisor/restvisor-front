@@ -17,12 +17,8 @@ const WaiterDashboard: React.FC = () => {
     const {
         tables,
         menuItems,
-        pendingOrders,
-        activeOrders,
-        setActiveOrders,
         tablesWithReadyOrders,
         getTables,
-        addOrder,
         submitOrder
     } = useTablesAndMenu();
 
@@ -148,13 +144,16 @@ const WaiterDashboard: React.FC = () => {
             // Reset the current order with a new ID
             setCurrentOrder({
                 id: Date.now(),
-                tableNumber: selectedTable.numero,
+                tableNumber: 0,
                 status: 'pending',
                 created_at: new Date().toISOString(),
                 orderDetails: [],
                 active: true,
                 details: ''
             });
+
+            // Clear the selected table
+            setSelectedTable(null);
 
             // Notify user of success
             toast.success('Pedido enviado correctamente', {
