@@ -8,6 +8,7 @@ import OrderStatus from '../components/waiter/OrderStatus';
 import TableMapModal from '../components/waiter/TableMapModal';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
+import { updateOrdersToDelivered } from '../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -48,6 +49,35 @@ const WaiterDashboard: React.FC = () => {
         // Close the map modal if it's open when a table is selected
         if (isMapModalOpen) {
             setIsMapModalOpen(false);
+        }
+
+        // Check if this table has ready orders that need to be marked as delivered
+        if (tablesWithReadyOrders.includes(table.numero)) {
+            try {
+                const updated = await updateOrdersToDelivered(table.numero);
+                if (updated) {
+                    // Refresh tables to update the UI
+                    await getTables();
+                    
+                    // Show success notification
+                    toast.success('Pedido marcado como entregado', {
+                        duration: 3000,
+                        position: 'top-center',
+                        icon: '✅',
+                        style: {
+                            borderRadius: '10px',
+                            background: '#333',
+                            color: '#fff',
+                        },
+                    });
+                }
+            } catch (error) {
+                console.error('Error updating orders to delivered:', error);
+                toast.error('Error al marcar pedido como entregado', {
+                    duration: 3000,
+                    position: 'top-center',
+                });
+            }
         }
     };
 

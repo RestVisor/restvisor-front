@@ -250,3 +250,42 @@ export const getTableHistoryForTodayAPI = async (tableNumber: number): Promise<O
         throw error; // Re-throw other errors
     }
 };
+
+export const updateOrdersToDelivered = async (tableNumber: number): Promise<boolean> => {
+    const token = authService.getToken();
+    if (!token) {
+        throw new Error('No token found, please log in');
+    }
+
+    try {
+        // Get all active orders for this table that are in 'listo' status
+        const activeOrders = await getActiveOrders();
+        const readyOrders = activeOrders.filter(
+            order => order.tableNumber === tableNumber && order.status === 'listo' && order.active
+        );
+
+        if (readyOrders.length === 0) {
+            return false; // No orders to update
+        }
+
+        // Update each order's status to 'entregado'
+        const updatePromises = readyOrders.map(order => 
+            axios.put(
+                `${API_URL}/orders/${order.id}/status`,
+                { status: 'entregado' },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            )
+        );
+
+        await Promise.all(updatePromises);
+        return true; // Successfully updated orders
+    } catch (error) {
+        console.error('Error updating orders to delivered:', error);
+        return false; // Failed to update orders
+    }
+};
